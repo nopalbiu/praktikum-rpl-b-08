@@ -4,6 +4,7 @@ Aplikasi katalog fashion untuk menampilkan koleksi outfit terbaru secara interak
 ## Anggota Kelompok
 | Nama | NIM | Role |
 | :-- | :-- | :-- |
+| Naufal Abiyyu Ghazy | L0124028 | Project Manager |
 
 ## Fitur Utama
 1. Katalog Produk: Menampilkan daftar koleksi outfit secara visual.
