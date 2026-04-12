@@ -1,0 +1,1 @@
+Peminat Fashion mengalami kesulitan memilih, melihat detail, dan stok pakaian ketikaingin membeli pakaian di platform sosial media. Hal ini menyebabkan Pelanggan harus memakan waktu mencari pakaian yang sesuai dan tersedia. Solusi berupa aplikasi katalog pakaian diharapkan dapat mempermudah dan memperjelas proses mencari pakaian yang diinginkan.
