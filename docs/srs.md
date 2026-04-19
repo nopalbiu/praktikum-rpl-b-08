@@ -47,6 +47,15 @@ Fungsi utama sistem meliputi:
 - FR-09: Sistem memungkinkan Admin untuk mengubah detail informasi produk yang sudah ada di katalog. Prioritas: Low. Ref: US-09.
 - FR-10: Sistem memungkinkan Admin untuk menghapus produk tertentu dari tampilan katalog. Prioritas: medium. Ref: US-10.
 
+## 4. Kebutuhan Non-Fungsional
+- NFR-01 (Performance): Sistem harus dapat menampilkan hasil pencarian produk di layar dalam waktu kurang dari 4 detik pada kondisi koneksi internet normal 4G yang dibuktikan melalui pengujian load test.
+- NFR-02 (Performance): Sistem harus dapat menangani minimal 100 pengguna aktif secara bersamaan tanpa adanya penurunan performa aplikasi yang signifikan melalui pengujian skenario load testing.
+- NFR-03 (Security): Sistem harus membatasi akses fitur manajemen produk agar hanya untuk akun dengan role Admin melalui proses autentikasi login yang dapat diuji dengan uji coba akses URL admin tanpa akun yang sah.
+- NFR-04 (Security): Sistem wajib menyimpan seluruh kata sandi pengguna dalam database dalam bentuk terenkripsi(hashed) untuk agar keamanan user terjaga yang dapat diuji melalui inspeksi langsung pada data tabel users.
+- NFR-05 (Reliability): Sistem harus bisa memvalidasi 100% input pengguna dan memberikan pesan kesalahan apabila ditemukan kolom yang kosong atau format yang tidak valid sebelum data diproses.
+- NFR-06 (Reliability): Sistem harus memiliki tingkat ketersediaan minimal 97% per bulan yang dapat dicek melalui laporan log server.
+- NFR-07 (Usability): Sistem harus dapat diakses melalui berbagai browser dengan tingkat kompatibilitas tampilan dan fungsi minimal 95% tanpa ada error yang diverifikasi melalui pengujian di berbagai browser dan perangkat.
+
 ## 5. Catatan dan Asumsi
 - Asumsi Pengguna: Pengguna diasumsikan mengakses melalui web browser modern (seperti Chrome, Safari, atau Edge) pada perangkat dengan resolusi layar standar (mobile maupun desktop).
 - Asumsi Data: Admin diasumsikan akan upload gambar produk dengan format standar (JPG/PNG) dan ukuran file yang wajar agar tidak membebani server.
