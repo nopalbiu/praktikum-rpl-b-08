@@ -33,3 +33,15 @@ Fungsi utama sistem meliputi:
 ### 2.4 Batasan
 - Aplikasi ini berfokus pada fitur visual katalog dan belum mendukung fitur transaksi pembayaran.
 - Memerlukan koneksi internet yang stabil untuk memuat gambar produk secara real-time.
+
+## 3. Kebutuhan Fungsional
+- FR-01: Sistem menyediakan kolom pencarian produk agar pengguna dapat menemukan item yang lebih sesuai dengan yang dicari. Prioritas: High. Ref: US-01.
+- FR-02: Sistem menyediakan fitur filter produk berdasarkan kategori tertentu pada katalog utama untuk memudahkan navigasi. Prioritas: Medium. Ref: US-02.
+- FR-03: Sistem menampilkan informasi detail produk yang mencakup deskripsi bahan pakaian dan tabel ukuran. Prioritas: Medium. Ref: US-03.
+- FR-04: Sistem memungkinkan pelanggan untuk memilih ukuran dan menambahkan produk tersebut ke dalam keranjang belanja. Prioritas: High. Ref: US-04.
+- FR-05: Sistem memproses transaksi checkout dengan menghitung total biaya secara otomatis setelah pelanggan melengkapi data pengiriman. Prioritas: High. Ref: US-05.
+- FR-06: Sistem memberikan akses kepada Admin untuk menambahkan artikel pakaian baru ke dalam katalog produk. Prioritas: High. Ref: US-06.
+- FR-07: Sistem menyediakan daftar pesanan masuk bagi Admin yang lengkap dengan detail barang dan alamat tujuan pelanggan. Prioritas: High. Ref: US-07.
+- FR-08: Sistem memungkinkan Admin untuk memperbarui jumlah stok pada setiap varian ukuran produk. Prioritas: Medium. Ref: US-08.
+- FR-09: Sistem memungkinkan Admin untuk mengubah detail informasi produk yang sudah ada di katalog. Prioritas: Low. Ref: US-09.
+- FR-10: Sistem memungkinkan Admin untuk menghapus produk tertentu dari tampilan katalog. Prioritas: medium. Ref: US-10.
