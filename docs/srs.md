@@ -3,7 +3,7 @@
 ## 1. Pendahuluan
 
 ### 1.1 Tujuan Dokumen
-Dokumen ini mendeskripsikan kebutuhan software dan web untuk aplikasi WearWoreWorn. Tujuannya adalah memberikan panduan teknis bagi tim pengembang dan menjadi kontrak spesifikasi fitur dengan pemangku kepentingan.
+Dokumen ini mendeskripsikan kebutuhan web untuk WearWoreWorn. Tujuannya adalah memberikan panduan teknis bagi tim pengembang dan menjadi kontrak spesifikasi fitur dengan pemangku kepentingan.
 
 ### 1.2 Ruang Lingkup
 WearWoreWorn adalah platform katalog outfit digital yang berfokus pada penyediaan referensi outfit bagi pengguna remaja dan dewasa. Sistem mencakup fitur manajemen katalog oleh admin dan eksplorasi katalog serta filter produk oleh pengguna.
@@ -18,7 +18,7 @@ WearWoreWorn adalah platform katalog outfit digital yang berfokus pada penyediaa
 ## 2. Deskripsi Umum
 
 ### 2.1 Perspektif Produk
-WearWoreWorn adalah aplikasi katalog outfit yang dirancang untuk menyederhanakan pencarian referensi outfit bagi pengguna. Sistem ini mengintegrasikan data produk dari berbagai kategori ke dalam satu UI yang interaktif.
+WearWoreWorn adalah website katalog outfit yang dirancang untuk menyederhanakan pencarian referensi outfit bagi pengguna. Sistem ini mengintegrasikan data produk dari berbagai kategori ke dalam satu UI yang interaktif.
 
 ### 2.2 Fungsi Produk
 Fungsi utama sistem meliputi:
@@ -31,8 +31,9 @@ Fungsi utama sistem meliputi:
 - Admin: Pengelola konten yang memiliki hak akses untuk memperbarui stok dan informasi produk di katalog.
 
 ### 2.4 Batasan
-- Aplikasi ini berfokus pada fitur visual katalog dan belum mendukung fitur transaksi pembayaran.
-- Memerlukan koneksi internet yang stabil untuk memuat gambar produk secara real-time.
+- Sistem mendukung fitur transaksi dan checkout, namun metode pembayaran yang tersedia terbatas pada transfer manual. Belum tersedia integrasi pembayaran otomatis melalui Virtual Account (VA), E-Wallet, atau Payment Gateway pihak ketiga.
+- Sistem belum terintegrasi dengan API logistik, sehingga perhitungan ongkos kirim dan pelacakan resi pengiriman dilakukan secara manual atau di luar sistem.
+- Website memerlukan koneksi internet yang stabil untuk sinkronisasi data pesanan dan loading aset visual katalog.
 
 ## 3. Kebutuhan Fungsional
 - FR-01: Sistem menyediakan kolom pencarian produk agar pengguna dapat menemukan item yang lebih sesuai dengan yang dicari. Prioritas: High. Ref: US-01.
@@ -45,3 +46,9 @@ Fungsi utama sistem meliputi:
 - FR-08: Sistem memungkinkan Admin untuk memperbarui jumlah stok pada setiap varian ukuran produk. Prioritas: Medium. Ref: US-08.
 - FR-09: Sistem memungkinkan Admin untuk mengubah detail informasi produk yang sudah ada di katalog. Prioritas: Low. Ref: US-09.
 - FR-10: Sistem memungkinkan Admin untuk menghapus produk tertentu dari tampilan katalog. Prioritas: medium. Ref: US-10.
+
+## 5. Catatan dan Asumsi
+- Asumsi Pengguna: Pengguna diasumsikan mengakses melalui web browser modern (seperti Chrome, Safari, atau Edge) pada perangkat dengan resolusi layar standar (mobile maupun desktop).
+- Asumsi Data: Admin diasumsikan akan upload gambar produk dengan format standar (JPG/PNG) dan ukuran file yang wajar agar tidak membebani server.
+- Dependensi Sistem: Kinerja website sangat bergantung pada kestabilan database dan cloud storage yang akan digunakan.
+- Batasan Teknis: Belum ada fitur otomatisasi pengecekan mutasi bank atau notifikasi pembayaran instan layaknya sistem Virtual Account. Seluruh validasi transaksi  mengandalkan intervensi manual dari Admin.
