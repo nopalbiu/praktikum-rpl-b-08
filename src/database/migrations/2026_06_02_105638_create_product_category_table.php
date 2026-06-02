@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_variants', function (Blueprint $table) {
-            $table->id('id_variant');
+        Schema::create('product_category', function (Blueprint $table) {
+            $table->unsignedBigInteger('id_category');
             $table->unsignedBigInteger('id_product');
-            $table->string('ukuran', 10); 
-            $table->integer('stok');
             $table->timestamps();
 
-            // Relasi ke tabel products
+            // Relasi Foreign Key
+            $table->foreign('id_category')->references('id_category')->on('categories')->onDelete('cascade');
             $table->foreign('id_product')->references('id_product')->on('products')->onDelete('cascade');
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_variants');
+        Schema::dropIfExists('product_category');
     }
 };
