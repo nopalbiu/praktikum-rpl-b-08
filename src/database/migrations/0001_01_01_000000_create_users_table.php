@@ -11,14 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // 1. Tabel Roles 
+        Schema::create('roles', function (Blueprint $table) {
+            $table->id('id_role');
+            $table->string('nama_role', 50); 
+            $table->timestamps();
+        });
+
+        // 2. Tabel Users
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
+            $table->id('id_user');
+            $table->unsignedBigInteger('id_role');
+            $table->string('nama', 100);
+            $table->string('email', 100)->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password', 255);
             $table->rememberToken();
             $table->timestamps();
+
+            // Relasi ke tabel roles
+            $table->foreign('id_role')->references('id_role')->on('roles')->onDelete('cascade');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -36,7 +48,6 @@ return new class extends Migration
             $table->integer('last_activity')->index();
         });
     }
-
     /**
      * Reverse the migrations.
      */
