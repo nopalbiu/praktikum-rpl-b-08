@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthenticationController extends Controller
 {
-    public function showRegister()
+
+    public function showRegister() 
     {
         return view('authentication.register'); 
     }
@@ -23,7 +24,6 @@ class AuthenticationController extends Controller
         ]);
 
         $user = new User();
-        
         $user->nama = $request->name; 
         $user->email = $request->email;
         $user->password = Hash::make($request->password); 
@@ -47,14 +47,43 @@ class AuthenticationController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
-            // Jika cocok, segarkan session untuk keamanan login
             $request->session()->regenerate();
-
-            return redirect()->intended('dashboard');
+            return redirect()->route('home');
         }
 
         return back()->withErrors([
             'email' => 'Email atau password yang kamu masukkan salah.',
+        ]);
+    }
+
+
+    public function showAdminLogin()
+    {
+        // Pastikan anak frontend nanti bikin file admin_login.blade.php di folder authentication ya
+        return view('authentication.admin_login'); 
+    }
+
+    public function processAdminLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        if (Auth::attempt($credentials)) {
+            if (Auth::user()->id_role == 1) {
+                $request->session()->regenerate();
+                return redirect()->route('admin.katalog'); 
+            }
+
+            Auth::logout();
+            return back()->withErrors([
+                'email' => 'Akses ditolak! Halaman ini hanya diperuntukkan bagi Akun Admin.',
+            ]);
+        }
+
+        return back()->withErrors([
+            'email' => 'Email atau password admin salah.',
         ]);
     }
 }
