@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
+// Developer: Hesa Khansa Arka
+// NIM: L0124158
+
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -11,10 +14,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Panggil seeder buatan kita di sini secara berurutan
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
+            SizeSeeder::class,       
+            CategorySeeder::class,   
+            ProductSeeder::class,    
         ]);
     }
 }
