@@ -2,12 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthenticationController;
-use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\HomeController;    
 use App\Http\Controllers\ProductController;
 
 // Halaman Home 
-Route::get('/', [CatalogController::class, 'index'])->name('home');
-Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/catalog', [HomeController::class, 'index'])->name('catalog.index');
 
 // Autentikasi User
 Route::get('/register', [AuthenticationController::class, 'showRegister'])->name('register');
@@ -39,4 +39,5 @@ Route::get('/admin/katalog-pakaian', function () {
 })->name('admin.katalog');
  
 // Halaman Detail Produk
-Route::get('/products/{slug}', [ProductController::class, 'show'])->name('product.show');
+Route::get('/product/{nama}', [ProductController::class, 'show'])->name('product.show');
+Route::post('/cart/add/{id}', [ProductController::class, 'addToCart'])->name('cart.add');
