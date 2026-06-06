@@ -32,7 +32,7 @@
             </div>
 
             <div class="flex items-center space-x-4">
-                <a href="#" class="text-gray-300 hover:text-white transition">
+                <a href="{{ route('cart.index') }}" class="text-gray-300 hover:text-white transition relative">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
@@ -49,6 +49,27 @@
     </nav>
 
     <main class="flex-grow container mx-auto p-4 md:p-8 mt-4">
+
+        {{-- Flash message sukses --}}
+        @if(session('success'))
+        <div class="bg-green-900/60 border border-green-500 text-green-200 px-5 py-3 rounded-lg mb-6 flex items-center gap-3 shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="font-medium">{{ session('success') }}</span>
+        </div>
+        @endif
+
+        {{-- Flash message error --}}
+        @if($errors->any())
+        <div class="bg-red-900/60 border border-red-500 text-red-200 px-5 py-3 rounded-lg mb-6 flex items-center gap-3 shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            <span class="font-medium">{{ $errors->first() }}</span>
+        </div>
+        @endif
+
         <div class="flex flex-col lg:flex-row gap-10">
             
             <div class="w-full lg:w-1/2 flex flex-col gap-4">
@@ -73,7 +94,7 @@
             </div>
 
             <div class="w-full lg:w-1/2 flex flex-col justify-start">
-                <form action="{{ url('/cart/add/' . $product->id_product) }}" method="POST">
+                <form id="cart-form" action="{{ route('cart.add', $product->id_product) }}" method="POST">
                     @csrf
                     
                     <h1 class="text-4xl font-extrabold text-white mb-2 uppercase">{{ $product->nama_product }}</h1>
@@ -96,6 +117,10 @@
                             <span class="text-red-400 font-semibold">Varian ukuran belum tersedia.</span>
                             @endforelse
                         </div>
+                        {{-- Error validasi size --}}
+                        @error('size')
+                        <p class="text-red-400 text-sm mt-2">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="mb-8 flex items-center gap-6">
@@ -110,9 +135,15 @@
                     </div>
 
                     <div class="flex flex-col gap-4 mb-10 border-b border-gray-700 pb-10">
-                        <button type="submit" class="w-full bg-gray-200 hover:bg-white text-black font-bold py-4 px-4 rounded transition duration-200 text-lg">
-                            Add to Cart
-                        </button>
+                        @auth
+                            <button type="submit" class="w-full bg-gray-200 hover:bg-white text-black font-bold py-4 px-4 rounded transition duration-200 text-lg">
+                                Add to Cart
+                            </button>
+                        @else
+                            <a href="{{ route('login') }}" class="w-full bg-gray-200 hover:bg-white text-black font-bold py-4 px-4 rounded transition duration-200 text-lg text-center block">
+                                Add to Cart
+                            </a>
+                        @endauth
                         <button type="button" class="w-full bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-bold py-4 px-4 rounded transition duration-200 text-lg">
                             Buy it now
                         </button>
@@ -180,6 +211,16 @@
                         stockDisplay.innerText = stockData[this.value] || 0;
                     }
                 });
+            });
+
+            // Auto-hide flash messages setelah 5 detik
+            const flashMessages = document.querySelectorAll('[class*="bg-green-900"], [class*="bg-red-900"]');
+            flashMessages.forEach(msg => {
+                setTimeout(() => {
+                    msg.style.transition = 'opacity 0.5s ease';
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500);
+                }, 5000);
             });
         });
     </script>

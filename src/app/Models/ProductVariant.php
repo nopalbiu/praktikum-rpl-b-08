@@ -10,25 +10,33 @@ class ProductVariant extends Model
 {
     use HasFactory;
  
-    protected $fillable = ['product_id', 'size', 'stock', 'price_modifier'];
- 
-    protected $casts = [
-        'stock'          => 'integer',
-        'price_modifier' => 'decimal:2',
+    protected $primaryKey = 'id_variant';
+
+    protected $fillable = [
+        'id_product',
+        'id_size',
+        'stok',
     ];
  
+    protected $casts = [
+        'stok' => 'integer',
+    ];
+ 
+    /** Relasi: Varian dimiliki satu produk */
     public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class, 'id_product', 'id_product');
+    }
+
+    /** Relasi: Varian merujuk ke satu size */
+    public function size(): BelongsTo
+    {
+        return $this->belongsTo(Size::class, 'id_size', 'id_size');
     }
  
+    /** Helper: Cek apakah varian masih tersedia */
     public function isInStock(): bool
     {
-        return $this->stock > 0;
-    }
- 
-    public function getFinalPrice(): float
-    {
-        return (float) ($this->product->price + $this->price_modifier);
+        return $this->stok > 0;
     }
 }
