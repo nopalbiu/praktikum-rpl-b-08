@@ -9,11 +9,15 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('categories')->insert([
-            ['nama_category' => 'T-Shirt'],
-            ['nama_category' => 'Pants'],
-            ['nama_category' => 'Jacket'],
-            ['nama_category' => 'Accessories']
-        ]);
+        $categories = [
+            'T-Shirt', 'Shirt', 'Polo', 'Crewneck', 
+            'Hoodie', 'Jacket', 'Jeans', 'Pants', 'Accessories'
+        ];
+        
+        foreach ($categories as $category) {
+            DB::table('categories')->insert([
+                'nama_category' => $category
+            ]);
+        }
     }
 }

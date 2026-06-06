@@ -14,7 +14,8 @@ class SizeSeeder extends Seeder
             ['nama_size' => 'M'],
             ['nama_size' => 'L'],
             ['nama_size' => 'XL'],
-            ['nama_size' => 'XXL']
+            ['nama_size' => 'XXL'],
+            ['nama_size' => 'ALL Size']
         ]);
     }
 }
