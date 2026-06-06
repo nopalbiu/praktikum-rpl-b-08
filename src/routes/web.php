@@ -7,7 +7,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\AdminOrderController; // <-- Ini tambahan importnya
+use App\Http\Controllers\AdminOrderController; 
+use App\Http\Controllers\UserProfileController; // <-- Ini yang tadi kelupaan
 
 // Halaman Home 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -40,6 +41,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'processOrder'])->name('checkout.process');
     Route::get('/checkout/success/{orderId}', [CheckoutController::class, 'success'])->name('checkout.success');
+
+    // Fitur Profil User
+    Route::get('/profile', [UserProfileController::class, 'index'])->name('user.profile');
+    Route::put('/profile/update', [UserProfileController::class, 'updateProfile'])->name('user.profile.update');
+    Route::put('/profile/password', [UserProfileController::class, 'updatePassword'])->name('user.profile.password');
 });
 
 // Admin Area
