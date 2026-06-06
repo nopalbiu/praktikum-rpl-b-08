@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\AdminOrderController; // <-- Ini tambahan importnya
 
 // Halaman Home 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -41,9 +42,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout/success/{orderId}', [CheckoutController::class, 'success'])->name('checkout.success');
 });
 
-// Admin Katalog
+// Admin Area
 Route::prefix('admin')->name('admin.')->group(function () {
     
+    // --- FITUR PESANAN (ORDERS) ---
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::put('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
+    // --- FITUR KATALOG PRODUK ---
     // 1. Rute Utama (Dipakai oleh Navbar)
     Route::get('/products', [AdminProductController::class, 'index'])->name('product.index');
     
