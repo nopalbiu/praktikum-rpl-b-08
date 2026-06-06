@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AdminProductController;
+use App\Http\Controllers\CartController;
 
 // Halaman Home 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -27,10 +28,11 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
     
-    // Fitur Cart & Checkout 
-    Route::get('/cart', fn() => view('cart.index'))->name('cart.index');
-    Route::post('/products/{productId}/add-to-cart', [ProductController::class, 'addToCart'])->name('cart.add');
-    Route::post('/products/{productId}/buy-now', [ProductController::class, 'buyNow'])->name('product.buy-now');
+    // Fitur Cart
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add/{productId}', [CartController::class, 'addToCart'])->name('cart.add');
+    
+    // Checkout (placeholder untuk nanti)
     Route::get('/checkout', fn() => view('checkout.index'))->name('checkout.index');
 });
 
@@ -52,6 +54,5 @@ Route::prefix('admin')->name('admin.')->group(function () {
         
 });
  
-// Halaman Detail Produk
+// Halaman Detail Produk (publik, bisa diakses tanpa login)
 Route::get('/product/{nama}', [ProductController::class, 'show'])->name('product.show');
-Route::post('/cart/add/{id}', [ProductController::class, 'addToCart'])->name('cart.add');
