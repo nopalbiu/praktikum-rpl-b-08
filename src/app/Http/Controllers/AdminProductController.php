@@ -10,20 +10,30 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with(['images', 'variants'])->get();
-        return view('admin.katalog', compact('products'));
+        $search = $request->input('search');
+
+        $products = Product::with(['images', 'variants'])
+            ->when($search, function ($query, $search) {
+                return $query->where('nama_product', 'like', '%' . $search . '%');
+            })
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('admin.katalog', compact('products', 'search'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'nama_product' => 'required|string|max:255',
+            'nama_product' => 'required|string|max:255|unique:products,nama_product',
             'deskripsi'    => 'required|string',
             'harga'        => 'required|numeric',
             'foto_utama'   => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'foto_tambahan.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ], [
+            'nama_product.unique' => 'Nama produk ini sudah digunakan, silakan pilih nama lain.'
         ]);
 
         DB::beginTransaction();
@@ -80,6 +90,14 @@ class AdminProductController extends Controller
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'nama_product' => 'required|string|max:255|unique:products,nama_product,' . $id . ',id_product',
+            'deskripsi'    => 'required|string',
+            'harga'        => 'required|numeric',
+        ], [
+            'nama_product.unique' => 'Nama produk ini sudah digunakan oleh produk lain.'
+        ]);
+
         $product = Product::findOrFail($id);
 
         $product->update([
