@@ -1,109 +1,107 @@
 <?php
 
 namespace App\Http\Controllers;
- 
+
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
- 
+
 class ProductController extends Controller
 {
-
-    public function show(string $slug): View
+    /**
+     * Menampilkan halaman detail produk
+     */
+    public function show($nama): View
     {
-        // Ambil produk berdasarkan slug + eager load relasi — 404 jika tidak ada
-        $product = Product::with(['category', 'variants'])
-            ->where('slug', $slug)
-            ->firstOrFail();
- 
-        // Urutkan varian dari kecil ke besar (S → XXL) untuk tampilan size chart
-        $sizeOrder = ['S', 'M', 'L', 'XL', 'XXL'];
-        $variants  = $product->variants->sortBy(function ($variant) use ($sizeOrder) {
-            return array_search($variant->size, $sizeOrder);
-        })->values();
- 
-        return view('product.show', [
-            'product'  => $product,
-            'variants' => $variants,  // US-03: data size chart
+        $product = Product::with(['images' => function ($query) {
+            $query->orderBy('is_primary', 'desc')->orderBy('id_image', 'asc');
+        }])->where('nama_product', $nama)->firstOrFail();
+
+        $variants = \Illuminate\Support\Facades\DB::table('product_variants')
+            ->join('sizes', 'product_variants.id_size', '=', 'sizes.id_size')
+            ->where('id_product', $product->id_product)
+            ->get();
+
+        $totalStock = $variants->sum('stok');
+
+        return view('detail-produk', [
+            'product' => $product,
+            'variants' => $variants,
+            'totalStock' => $totalStock
         ]);
     }
- 
 
-    public function addToCart(Request $request, int $productId): RedirectResponse
+    /**
+     * Menambahkan item ke keranjang (Session)
+     */
+    public function addToCart(Request $request, $productId): RedirectResponse
     {
         // Validasi input wajib dari form detail produk
         $request->validate([
             'size'     => 'required|in:S,M,L,XL,XXL',
             'quantity' => 'required|integer|min:1|max:99',
         ]);
- 
+
         $product  = Product::findOrFail($productId);
-        $variant  = $product->getVariantBySize($request->input('size'));
         $quantity = (int) $request->input('quantity', 1);
- 
-        // Varian ukuran tidak ada di database
-        if (!$variant) {
-            return back()->with('error', 'Ukuran yang dipilih tidak tersedia.');
-        }
- 
-        if (!$variant->isInStock()) {
-            return back()->with('error', 'Stok Habis');
-        }
- 
+        $size     = $request->input('size');
+
+        // Mengambil keranjang dari session
         $cart    = session()->get('cart', []);
-        $cartKey = $productId . '_' . $request->input('size'); 
- 
+        $cartKey = $product->id_product . '_' . $size; 
+
+        // Logika penambahan kuantitas jika barang sudah ada di keranjang
         if (isset($cart[$cartKey])) {
-            $cart[$cartKey]['quantity'] = min($cart[$cartKey]['quantity'] + $quantity, $variant->stock);
+            $cart[$cartKey]['quantity'] += $quantity;
         } else {
+            // Memasukkan data baru menggunakan nama kolom DB asli kalian
             $cart[$cartKey] = [
-                'product_id'   => $product->id,
-                'product_name' => $product->name,
-                'slug'         => $product->slug,
-                'thumbnail'    => $product->thumbnail,
-                'size'         => $request->input('size'),
-                'price'        => $variant->getFinalPrice(),
-                'quantity'     => min($quantity, $variant->stock),
+                'product_id'   => $product->id_product,
+                'product_name' => $product->nama_product,
+                'thumbnail'    => $product->url_gambar,
+                'size'         => $size,
+                'price'        => $product->harga,
+                'quantity'     => $quantity,
             ];
         }
- 
-        session()->put('cart', $cart);
- 
-        return redirect()->route('cart.index')
-            ->with('success', "{$product->name} (Size: {$request->input('size')}) berhasil ditambahkan ke keranjang.");
-    }
- 
 
-    public function buyNow(Request $request, int $productId): RedirectResponse
+        session()->put('cart', $cart);
+
+        return redirect()->back()
+            ->with('success', "{$product->nama_product} (Size: {$size}) berhasil ditambahkan ke keranjang.");
+    }
+
+    /**
+     * Langsung beli dan menuju Checkout
+     */
+    public function buyNow(Request $request, $productId): RedirectResponse
     {
         $request->validate([
             'size'     => 'required|in:S,M,L,XL,XXL',
             'quantity' => 'required|integer|min:1|max:99',
         ]);
- 
+
         $product  = Product::findOrFail($productId);
-        $variant  = $product->getVariantBySize($request->input('size'));
         $quantity = (int) $request->input('quantity', 1);
- 
-        if (!$variant)           return back()->with('error', 'Ukuran yang dipilih tidak tersedia.');
-        if (!$variant->isInStock()) return back()->with('error', 'Stok Habis');
- 
-        // Untuk "Buy it now": timpa cart dengan hanya item ini
-        $cartKey = $productId . '_' . $request->input('size');
-        session()->put('cart', [
-            $cartKey => [
-                'product_id'   => $product->id,
-                'product_name' => $product->name,
-                'slug'         => $product->slug,
-                'thumbnail'    => $product->thumbnail,
-                'size'         => $request->input('size'),
-                'price'        => $variant->getFinalPrice(),
-                'quantity'     => min($quantity, $variant->stock),
-            ],
-        ]);
- 
-        // Langsung ke halaman checkout
-        return redirect()->route('checkout.index');
+        $size     = $request->input('size');
+
+        $cartKey = $product->id_product . '_' . $size;
+        
+        // Untuk "Buy it now", keranjang bisa ditimpa atau ditambahkan. 
+        // Di sini kita tambahkan saja ke cart yang sudah ada sebelum ke checkout
+        $cart = session()->get('cart', []);
+        $cart[$cartKey] = [
+            'product_id'   => $product->id_product,
+            'product_name' => $product->nama_product,
+            'thumbnail'    => $product->url_gambar,
+            'size'         => $size,
+            'price'        => $product->harga,
+            'quantity'     => $quantity,
+        ];
+        session()->put('cart', $cart);
+
+        // Ganti 'checkout.index' dengan rute checkout kalian nanti
+        return redirect()->route('checkout.index'); 
     }
 }
