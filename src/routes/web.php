@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 
 // Halaman Home 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -31,9 +32,13 @@ Route::middleware(['auth'])->group(function () {
     // Fitur Cart
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add/{productId}', [CartController::class, 'addToCart'])->name('cart.add');
+    Route::post('/cart/buy-now/{productId}', [CartController::class, 'buyNow'])->name('cart.buyNow');
+    Route::delete('/cart/remove/{cartItemId}', [CartController::class, 'remove'])->name('cart.remove');
     
-    // Checkout (placeholder untuk nanti)
-    Route::get('/checkout', fn() => view('checkout.index'))->name('checkout.index');
+    // Checkout
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'processOrder'])->name('checkout.process');
+    Route::get('/checkout/success/{orderId}', [CheckoutController::class, 'success'])->name('checkout.success');
 });
 
 // Admin Katalog

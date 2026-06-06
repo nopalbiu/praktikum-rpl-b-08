@@ -144,9 +144,15 @@
                                 Add to Cart
                             </a>
                         @endauth
-                        <button type="button" class="w-full bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-bold py-4 px-4 rounded transition duration-200 text-lg">
-                            Buy it now
-                        </button>
+                        @auth
+                            <button type="submit" formaction="{{ route('cart.buyNow', $product->id_product) }}" class="w-full bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-bold py-4 px-4 rounded transition duration-200 text-lg">
+                                Buy it now
+                            </button>
+                        @else
+                            <a href="{{ route('login') }}" class="w-full bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-bold py-4 px-4 rounded transition duration-200 text-lg text-center block">
+                                Buy it now
+                            </a>
+                        @endauth
                     </div>
 
                     <div>
