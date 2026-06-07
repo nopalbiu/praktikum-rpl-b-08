@@ -10,8 +10,8 @@
 
     <nav class="bg-gray-800 border-b border-gray-700 px-6 py-4 flex justify-between items-center">
         <div class="flex items-center">
-            <a href="/" class="bg-white text-black font-bold text-xl px-4 py-1 uppercase rounded-sm tracking-wider">
-                LOGO
+            <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105">
+                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-10 w-auto object-contain">
             </a>
         </div>
         

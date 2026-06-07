@@ -8,7 +8,7 @@ use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\AdminOrderController; 
-use App\Http\Controllers\UserProfileController; // <-- Ini yang tadi kelupaan
+use App\Http\Controllers\UserProfileController;
 
 // Halaman Home 
 Route::get('/', [HomeController::class, 'index'])->name('home');

@@ -10,7 +10,9 @@
 
     <header class="bg-white shadow-sm border-b mb-8">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="/" class="text-xl font-bold tracking-wider">WearWoreWorn</a>
+            <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105">
+                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-10 w-auto object-contain">
+            </a>
             <div class="flex items-center gap-4">
                 <a href="{{ route('user.profile') }}" class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full transition">
                     <div class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-white font-bold text-sm">
