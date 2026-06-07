@@ -21,8 +21,8 @@
     <nav class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-md">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center">
-                <a href="/" class="bg-white text-black font-bold text-xl px-4 py-1 uppercase rounded-sm tracking-wider">
-                    LOGO
+                <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105">
+                    <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-10 w-auto object-contain">
                 </a>
             </div>
             
@@ -39,7 +39,7 @@
                 </a>
                 
                 @auth
-                    <a href="{{ route('home') }}" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition">Account</a>
+                    <a href="{{ route('user.profile') }}" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition">Account</a>
                 @else
                     <a href="{{ route('login') }}" class="text-gray-300 hover:text-white font-semibold transition">Log In</a>
                     <a href="{{ route('register') }}" class="bg-white hover:bg-gray-200 text-black font-bold px-4 py-2 rounded transition">Sign Up</a>
@@ -75,21 +75,36 @@
             <div class="w-full lg:w-1/2 flex flex-col gap-4">
                 <div class="bg-gray-800 rounded-lg aspect-square flex items-center justify-center overflow-hidden border border-gray-700 shadow-lg">
                     @php
-                        $mainImage = $product->images->first() ? asset('images/' . $product->images->first()->url_gambar) : 'https://dummyimage.com/800x800/374151/fff&text=No+Image';
+                        // Memanggil gambar utama dari folder storage
+                        $mainImage = $product->images->first() ? asset('storage/' . $product->images->first()->url_gambar) : 'https://dummyimage.com/800x800/374151/fff&text=No+Image';
                     @endphp
                     <img id="main-image" src="{{ $mainImage }}" onerror="this.onerror=null; this.src='https://dummyimage.com/800x800/374151/fff&text=No+Image';" class="w-full h-full object-cover">
                 </div>
                 
                 <div class="grid grid-cols-5 gap-4">
+                    {{-- Loop gambar produk tambahan --}}
                     @foreach($product->images as $index => $image)
                     <button type="button" 
                             class="thumbnail-btn bg-gray-800 rounded-md aspect-square border {{ $index === 0 ? 'border-white border-2' : 'border-gray-700' }} hover:border-gray-500 overflow-hidden" 
-                            data-src="{{ asset('images/' . $image->url_gambar) }}">
-                        <img src="{{ asset('images/' . $image->url_gambar) }}" 
+                            data-src="{{ asset('storage/' . $image->url_gambar) }}">
+                        <img src="{{ asset('storage/' . $image->url_gambar) }}" 
                              onerror="this.onerror=null; this.src='https://dummyimage.com/150x150/4b5563/fff&text=Broken';" 
                              class="w-full h-full object-cover">
                     </button>
                     @endforeach
+
+                    {{-- Memasukkan Size Chart ke galeri foto jika ada di database --}}
+                    @if($product->url_size_chart)
+                    <button type="button" 
+                            class="thumbnail-btn bg-gray-800 rounded-md aspect-square border border-gray-700 hover:border-gray-500 overflow-hidden relative" 
+                            data-src="{{ asset('storage/' . $product->url_size_chart) }}"
+                            title="Size Chart">
+                        <img src="{{ asset('storage/' . $product->url_size_chart) }}" 
+                             onerror="this.onerror=null; this.src='https://dummyimage.com/150x150/4b5563/fff&text=Broken';" 
+                             class="w-full h-full object-cover opacity-70 hover:opacity-100 transition-opacity">
+                        <span class="absolute inset-0 flex items-center justify-center text-white font-bold text-sm bg-black/30 pointer-events-none drop-shadow-md">SIZE</span>
+                    </button>
+                    @endif
                 </div>
             </div>
 
@@ -103,7 +118,6 @@
                     <div class="mb-6">
                         <div class="flex justify-between items-end mb-3">
                             <span class="font-bold text-white text-lg">Size</span>
-                            <button type="button" class="text-sm font-semibold text-blue-400 hover:text-blue-300 transition">Size Guide ></button>
                         </div>
                         <div class="flex flex-wrap gap-3">
                             @forelse($variants as $variant)
