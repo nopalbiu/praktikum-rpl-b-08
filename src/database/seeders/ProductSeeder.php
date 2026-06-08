@@ -9,7 +9,6 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-
         $products = [
             [
                 'nama_product' => 'Cincin Hitam Type A',
@@ -17,7 +16,7 @@ class ProductSeeder extends Seeder
                 'material_pakaian' => 'Titanium',
                 'harga' => 75000,
                 'id_category' => 9,
-                'tipe_ukuran' => 'aksesoris',
+                'tipe_ukuran' => 'cincin_gelang',
                 'prefix_gambar' => 'cincin-hitam-a',
                 'jumlah_gambar' => 1,
             ],
@@ -27,7 +26,7 @@ class ProductSeeder extends Seeder
                 'material_pakaian' => 'Titanium',
                 'harga' => 80000,
                 'id_category' => 9,
-                'tipe_ukuran' => 'aksesoris',
+                'tipe_ukuran' => 'cincin_gelang',
                 'prefix_gambar' => 'cincin-hitam-b',
                 'jumlah_gambar' => 2,
             ],
@@ -37,7 +36,7 @@ class ProductSeeder extends Seeder
                 'material_pakaian' => 'Stainless Steel',
                 'harga' => 65000,
                 'id_category' => 9,
-                'tipe_ukuran' => 'aksesoris',
+                'tipe_ukuran' => 'cincin_gelang',
                 'prefix_gambar' => 'cincin-silver-a',
                 'jumlah_gambar' => 2,
             ],
@@ -47,7 +46,7 @@ class ProductSeeder extends Seeder
                 'material_pakaian' => 'Stainless Steel',
                 'harga' => 70000,
                 'id_category' => 9,
-                'tipe_ukuran' => 'aksesoris',
+                'tipe_ukuran' => 'cincin_gelang',
                 'prefix_gambar' => 'cincin-silver-b',
                 'jumlah_gambar' => 2,
             ],
@@ -57,7 +56,7 @@ class ProductSeeder extends Seeder
                 'material_pakaian' => 'Stainless Steel',
                 'harga' => 85000,
                 'id_category' => 9,
-                'tipe_ukuran' => 'aksesoris',
+                'tipe_ukuran' => 'cincin_gelang',
                 'prefix_gambar' => 'cincin-silver-c',
                 'jumlah_gambar' => 2,
             ],
@@ -109,7 +108,7 @@ class ProductSeeder extends Seeder
                 'material_pakaian' => 'Paracord',
                 'harga' => 35000,
                 'id_category' => 9,
-                'tipe_ukuran' => 'aksesoris',
+                'tipe_ukuran' => 'cincin_gelang',
                 'prefix_gambar' => 'gelang-hitam-polos',
                 'jumlah_gambar' => 2,
             ],
@@ -119,7 +118,7 @@ class ProductSeeder extends Seeder
                 'material_pakaian' => 'Leather & Metal',
                 'harga' => 45000,
                 'id_category' => 9,
-                'tipe_ukuran' => 'aksesoris',
+                'tipe_ukuran' => 'cincin_gelang',
                 'prefix_gambar' => 'gelang-plus-hitam',
                 'jumlah_gambar' => 4,
             ],
@@ -129,7 +128,7 @@ class ProductSeeder extends Seeder
                 'material_pakaian' => 'Leather & Metal',
                 'harga' => 45000,
                 'id_category' => 9,
-                'tipe_ukuran' => 'aksesoris',
+                'tipe_ukuran' => 'cincin_gelang',
                 'prefix_gambar' => 'gelang-plus-putih',
                 'jumlah_gambar' => 4,
             ],
@@ -139,7 +138,7 @@ class ProductSeeder extends Seeder
                 'material_pakaian' => 'Stainless Steel',
                 'harga' => 55000,
                 'id_category' => 9,
-                'tipe_ukuran' => 'aksesoris',
+                'tipe_ukuran' => 'cincin_gelang',
                 'prefix_gambar' => 'gelang-silver-polos',
                 'jumlah_gambar' => 2,
             ],
@@ -236,7 +235,6 @@ class ProductSeeder extends Seeder
                 'prefix_gambar' => 'jeans-navy',
                 'jumlah_gambar' => 4,
             ],
-
             [
                 'nama_product' => 'Chino Pants Black',
                 'deskripsi' => 'Celana panjang chino warna hitam formal.',
@@ -608,7 +606,6 @@ class ProductSeeder extends Seeder
             }
 
             if ($item['prefix_gambar'] === 'jeans-blue') {
-                 // reset dan ganti dengan foto yang bener 
                  DB::table('product_images')->where('id_product', $productId)->delete();
                  $blueJeansImgs = [2, 3, 4];
                  foreach ($blueJeansImgs as $index => $imgNum) {
@@ -621,7 +618,6 @@ class ProductSeeder extends Seeder
             }
             
             if ($item['prefix_gambar'] === 'jeans-black') {
-                // nambahin foto dengan nama beda
                  DB::table('product_images')->insert([
                      'id_product' => $productId,
                      'url_gambar' => 'products/jeans-black-1 (2).webp',
@@ -632,7 +628,7 @@ class ProductSeeder extends Seeder
             if ($item['tipe_ukuran'] === 'aksesoris') {
                 DB::table('product_variants')->insert([
                     'id_product' => $productId,
-                    'id_size' => 6, 
+                    'id_size' => 6,
                     'stok' => 50, 
                 ]);
             } else {
