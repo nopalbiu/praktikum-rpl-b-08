@@ -89,6 +89,35 @@
                     
                     <div class="space-y-4">
                         @forelse($orders as $order)
+                        @if($order->status_pesanan === 'menunggu_pembayaran')
+                        {{-- Order belum dibayar: klik → ke halaman instruksi pembayaran --}}
+                        <a href="{{ route('checkout.success', $order->id_order) }}"
+                           class="block border border-blue-900/50 bg-blue-950/10 rounded-xl p-5 hover:border-blue-500/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.1)] transition-all duration-300 cursor-pointer flex flex-col gap-3 group">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-mono text-sm font-semibold text-blue-400">#TRX-{{ str_pad($order->id_order, 4, '0', STR_PAD_LEFT) }}</span>
+                                    <span class="text-xs text-zinc-500">{{ $order->created_at->format('d M Y') }}</span>
+                                </div>
+                                <span class="px-3 py-1 text-xs font-bold rounded-full bg-blue-900/30 text-blue-300 border border-blue-700/50 flex items-center gap-1.5">
+                                    <span class="relative flex h-1.5 w-1.5">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
+                                    </span>
+                                    Menunggu Pembayaran
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="font-medium text-zinc-300 text-sm">{{ $order->items->count() }} Product(s)</p>
+                                    <p class="text-xs text-blue-400/70 mt-1 group-hover:text-blue-400 transition-colors">
+                                        ↗ Klik untuk lihat instruksi pembayaran
+                                    </p>
+                                </div>
+                                <p class="font-bold text-white tracking-wide">Rp {{ number_format($order->total_harga, 0, ',', '.') }}</p>
+                            </div>
+                        </a>
+                        @else
+                        {{-- Order lain: klik → buka modal detail --}}
                         <div class="border border-zinc-800/80 bg-zinc-950/30 rounded-xl p-5 hover:border-blue-900/40 hover:shadow-[0_0_20px_rgba(30,58,138,0.1)] transition-all duration-300 cursor-pointer flex flex-col gap-3" onclick="openOrderModal('{{ $order->id_order }}')">
                             <div class="flex justify-between items-center mb-1">
                                 <div class="flex items-center gap-3">
@@ -106,6 +135,7 @@
                                 <p class="font-bold text-white tracking-wide">Rp {{ number_format($order->total_harga, 0, ',', '.') }}</p>
                             </div>
                         </div>
+                        @endif
                         @empty
                         <div class="text-center py-24 text-zinc-500 border border-zinc-800/50 border-dashed rounded-2xl bg-zinc-900/20">
                             <div class="bg-zinc-900 p-4 rounded-full mb-4 shadow-inner inline-block">
