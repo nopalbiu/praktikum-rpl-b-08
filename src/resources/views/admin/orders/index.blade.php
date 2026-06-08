@@ -19,7 +19,11 @@
                 <a href="{{ route('admin.product.index') }}" class="text-zinc-400 hover:text-white hover:bg-zinc-800/60 font-bold px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all">PRODUCT</a>    
                 <a href="{{ route('admin.orders.index') }}" class="bg-white text-zinc-950 font-black px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">ORDERS</a>
             </div>
-            <button class="bg-transparent border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white font-bold px-4 py-2 text-xs tracking-wider rounded-lg transition-all uppercase">LOG OUT</button>
+            
+            <form method="POST" action="{{ route('logout') }}" class="m-0 p-0">
+                @csrf
+                <button type="submit" class="bg-transparent border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white font-bold px-4 py-2 text-xs tracking-wider rounded-lg transition-all uppercase">LOG OUT</button>
+            </form>
     </nav>
 
     <div class="container mx-auto p-6 mt-4">
