@@ -16,7 +16,6 @@ class Size extends Model
         'nama_size',
     ];
 
-    /** Relasi: Satu ukuran memiliki banyak varian produk */
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class, 'id_size', 'id_size');

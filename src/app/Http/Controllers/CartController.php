@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 class CartController extends Controller
 {
-    /**
-     * Menampilkan halaman keranjang belanja
-     */
     public function index(): View
     {
         $user = Auth::user();
@@ -26,18 +23,15 @@ class CartController extends Controller
     public function addToCart(Request $request, $productId): RedirectResponse
     {
         
-        // Validasi input dari form detail produk
         $request->validate([
             'size'     => 'required|string',
             'quantity' => 'required|integer|min:1|max:99',
         ]);
         
-        // Cari produk
         $product = Product::findOrFail($productId);
         $size     = $request->input('size');
         $quantity = (int) $request->input('quantity', 1);
         
-        // Cari variant berdasarkan product + size
         $variant = $product->getVariantBySize($size);
         if ($variant->stok <= 0) {
             return redirect()->back()
@@ -45,23 +39,19 @@ class CartController extends Controller
         }
         $user = Auth::user();
         
-        // Cari atau buat cart user 
         $cart = Cart::firstOrCreate(
             ['id_user' => $user->id_user]
         );
         
-        // Cek apakah item dengan variant yang sama sudah ada di cart
         $existingItem = CartItem::where('id_cart', $cart->id_cart)
                                 ->where('id_variant', $variant->id_variant)
                                 ->first();
         if ($existingItem) {
             
-        // Tambah quantity jika sudah ada
             $existingItem->qty += $quantity;
             $existingItem->save();
         } else {
         
-        // Buat CartItem baru
             CartItem::create([
                 'id_cart'    => $cart->id_cart,
                 'id_variant' => $variant->id_variant,

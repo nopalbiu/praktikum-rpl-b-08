@@ -16,7 +16,6 @@ class Category extends Model
         'nama_category',
     ];
 
-    /** Relasi: Satu kategori memiliki banyak produk (many-to-many) */
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(

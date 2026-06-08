@@ -9,11 +9,8 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. daftar produk yang mau di-seed
-        // catatan id kategori: 1: T-Shirt, 2: Shirt, 3: Polo, 4: Crewneck, 5: Hoodie, 6: Jacket, 7: Jeans, 8: Pants, 9: Accessories
-        
+
         $products = [
-            // --- CINCIN (Accessories - ID 9) ---
             [
                 'nama_product' => 'Cincin Hitam Type A',
                 'deskripsi' => 'Cincin pria warna hitam desain elegan minimalis.',
@@ -65,7 +62,6 @@ class ProductSeeder extends Seeder
                 'jumlah_gambar' => 2,
             ],
 
-            // --- CREWNECK (ID 4) ---
             [
                 'nama_product' => 'Crewneck Black Premium',
                 'deskripsi' => 'Sweater crewneck hitam bahan tebal dan lembut.',
@@ -107,7 +103,6 @@ class ProductSeeder extends Seeder
                 'jumlah_gambar' => 3,
             ],
 
-            // --- GELANG (Accessories - ID 9) ---
             [
                 'nama_product' => 'Gelang Hitam Polos',
                 'deskripsi' => 'Gelang paracord hitam polos elegan.',
@@ -149,7 +144,6 @@ class ProductSeeder extends Seeder
                 'jumlah_gambar' => 2,
             ],
 
-            // --- HOODIE (ID 5) ---
             [
                 'nama_product' => 'Hoodie Black Essential',
                 'deskripsi' => 'Jaket hoodie hitam dengan saku kangguru.',
@@ -171,7 +165,6 @@ class ProductSeeder extends Seeder
                 'jumlah_gambar' => 3,
             ],
 
-            // --- JAKET (ID 6) ---
             [
                 'nama_product' => 'Jaket Jeans Light Blue',
                 'deskripsi' => 'Jaket bahan denim warna biru muda (light blue).',
@@ -213,7 +206,6 @@ class ProductSeeder extends Seeder
                 'jumlah_gambar' => 3,
             ],
 
-            // --- JEANS (ID 7) ---
             [
                 'nama_product' => 'Slim Fit Jeans Black',
                 'deskripsi' => 'Celana panjang jeans hitam pekat potongan slim.',
@@ -232,7 +224,7 @@ class ProductSeeder extends Seeder
                 'id_category' => 7,
                 'tipe_ukuran' => 'celana',
                 'prefix_gambar' => 'jeans-blue',
-                'jumlah_gambar' => 4, // Asumsi ini -1 sampai -4 sesuai penamaan webp
+                'jumlah_gambar' => 4,
             ],
             [
                 'nama_product' => 'Jeans Navy Relaxed',
@@ -245,7 +237,6 @@ class ProductSeeder extends Seeder
                 'jumlah_gambar' => 4,
             ],
 
-            // --- PANTS (ID 8) ---
             [
                 'nama_product' => 'Chino Pants Black',
                 'deskripsi' => 'Celana panjang chino warna hitam formal.',
@@ -287,7 +278,6 @@ class ProductSeeder extends Seeder
                 'jumlah_gambar' => 3,
             ],
 
-            // --- POLO (ID 3) ---
             [
                 'nama_product' => 'Polo Shirt Black',
                 'deskripsi' => 'Kaos berkerah (polo) warna hitam bahan adem.',
@@ -329,7 +319,6 @@ class ProductSeeder extends Seeder
                 'jumlah_gambar' => 2,
             ],
 
-            // --- SHIRT/KEMEJA (ID 2) ---
             [
                 'nama_product' => 'Kemeja Polos Black',
                 'deskripsi' => 'Kemeja lengan panjang hitam formal dan kasual.',
@@ -398,7 +387,7 @@ class ProductSeeder extends Seeder
                 'id_category' => 2,
                 'tipe_ukuran' => 'panjang',
                 'prefix_gambar' => 'shirt-olive',
-                'jumlah_gambar' => 4, // Ada file -4.webp walaupun -3 terlewat (dihandle khusus di bawah)
+                'jumlah_gambar' => 4,
             ],
             [
                 'nama_product' => 'Kemeja Polos White',
@@ -411,7 +400,6 @@ class ProductSeeder extends Seeder
                 'jumlah_gambar' => 4,
             ],
 
-            // --- TAS (Accessories - ID 9) ---
             [
                 'nama_product' => 'Tas Ransel Big Black',
                 'deskripsi' => 'Tas punggung (backpack) warna hitam kapasitas besar.',
@@ -463,7 +451,6 @@ class ProductSeeder extends Seeder
                 'jumlah_gambar' => 1,
             ],
 
-            // --- TOPI (Accessories - ID 9) ---
             [
                 'nama_product' => 'Topi Baseball Coklat',
                 'deskripsi' => 'Topi baseball warna coklat.',
@@ -495,7 +482,6 @@ class ProductSeeder extends Seeder
                 'jumlah_gambar' => 4,
             ],
 
-            // --- T-SHIRT (ID 1) ---
             [
                 'nama_product' => 'T-Shirt Black Combed',
                 'deskripsi' => 'Kaos lengan pendek hitam bahan combed 30s premium.',
@@ -578,10 +564,8 @@ class ProductSeeder extends Seeder
             ],
         ];
 
-        // 2. logic otomatis buat nyebarin array di atas ke 4 tabel database
         foreach ($products as $item) {
             
-            // a. tentukan url size chart sesuai tipe ukuran
             $sizeChart = null;
             if ($item['tipe_ukuran'] === 'celana') {
                 $sizeChart = 'sizecharts/size-cart-celana.png';
@@ -591,7 +575,6 @@ class ProductSeeder extends Seeder
                 $sizeChart = 'sizecharts/size-chart-lengan-panjang.png';
             }
 
-            // b. insert data ke tabel products utama
             $productId = DB::table('products')->insertGetId([
                 'nama_product' => $item['nama_product'],
                 'deskripsi' => $item['deskripsi'],
@@ -600,14 +583,11 @@ class ProductSeeder extends Seeder
                 'harga' => $item['harga'],
             ]);
 
-            // c. sambungin produk ke tabel product_category
             DB::table('product_category')->insert([
                 'id_product' => $productId,
                 'id_category' => $item['id_category'],
             ]);
 
-            // d. insert looping foto ke tabel product_images
-            // Handle khusus untuk shirt-olive karena ada file yang nomor 3 nya lompat
             if ($item['prefix_gambar'] === 'shirt-olive') {
                 $images = [1, 2, 4];
                 foreach ($images as $index => $imgNum) {
@@ -627,7 +607,6 @@ class ProductSeeder extends Seeder
                 }
             }
 
-            // Khusus handle jeans-blue karena nama file dari kamu start dari 2
             if ($item['prefix_gambar'] === 'jeans-blue') {
                  // reset dan ganti dengan foto yang bener 
                  DB::table('product_images')->where('id_product', $productId)->delete();
@@ -641,7 +620,6 @@ class ProductSeeder extends Seeder
                 }
             }
             
-            // Khusus handle jeans-black (2)
             if ($item['prefix_gambar'] === 'jeans-black') {
                 // nambahin foto dengan nama beda
                  DB::table('product_images')->insert([
@@ -651,7 +629,6 @@ class ProductSeeder extends Seeder
                  ]);
              }
 
-            // e. generate stok di tabel product_variants
             if ($item['tipe_ukuran'] === 'aksesoris') {
                 DB::table('product_variants')->insert([
                     'id_product' => $productId,

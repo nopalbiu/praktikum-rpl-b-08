@@ -16,7 +16,6 @@ class Role extends Model
         'nama_role',
     ];
 
-    /** Relasi: Satu role memiliki banyak user */
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'id_role', 'id_role');

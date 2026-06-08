@@ -22,19 +22,16 @@ class CartItem extends Model
         'qty' => 'integer',
     ];
 
-    /** Relasi: Item dimiliki satu cart */
     public function cart(): BelongsTo
     {
         return $this->belongsTo(Cart::class, 'id_cart', 'id_cart');
     }
 
-    /** Relasi: Item merujuk ke satu varian produk */
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'id_variant', 'id_variant');
     }
 
-    /** Helper: Subtotal item (qty × harga produk) */
     public function getSubtotal(): float
     {
         return $this->qty * (float) $this->variant->product->harga;

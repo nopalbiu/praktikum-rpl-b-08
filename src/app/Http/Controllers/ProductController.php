@@ -8,9 +8,6 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    /**
-     * Menampilkan halaman detail produk
-     */
     public function show($nama): View
     {
         $product = Product::with(['images' => function ($query) {
