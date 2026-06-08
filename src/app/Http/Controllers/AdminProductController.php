@@ -35,8 +35,6 @@ class AdminProductController extends Controller
             'foto_tambahan.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ];
 
-        // Validasi stok: jika multi size, minimal 1 ukuran harus diisi
-        // Jika single, stok_tunggal wajib diisi
         if ($request->has('is_multi_size')) {
             $rules['stok_ukuran'] = 'required|array|min:1';
             $rules['stok_ukuran.*'] = 'nullable|integer|min:0';
@@ -70,7 +68,6 @@ class AdminProductController extends Controller
 
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules, $messages);
 
-        // Validasi tambahan: jika multi size, minimal 1 stok harus diisi (bukan semua null)
         if ($request->has('is_multi_size')) {
             $validator->after(function ($validator) use ($request) {
                 $stokUkuran = $request->input('stok_ukuran', []);

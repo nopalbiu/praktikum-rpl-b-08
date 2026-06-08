@@ -8,22 +8,27 @@
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased selection:bg-blue-950 selection:text-blue-200">
 
-    <nav class="bg-zinc-900/60 backdrop-blur-md border-b border-zinc-800/80 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
-            <div class="flex items-center gap-6">
-                <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
-                    <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
-                </a>
-                <span class="text-blue-400 text-xs font-bold uppercase tracking-[0.2em] bg-blue-950/40 px-2.5 py-1 rounded border border-blue-900/30">Admin Panel</span>
-            </div>
-            <div class="flex gap-2">
-                <a href="{{ route('admin.product.index') }}" class="text-zinc-400 hover:text-white hover:bg-zinc-800/60 font-bold px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all">PRODUCT</a>    
-                <a href="{{ route('admin.orders.index') }}" class="bg-white text-zinc-950 font-black px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">ORDERS</a>
-            </div>
-            
+    <nav class="bg-zinc-900/60 backdrop-blur-md border-b border-zinc-800/80 px-6 py-4 grid grid-cols-3 items-center sticky top-0 z-40">
+        
+        <div class="flex items-center gap-6 justify-start">
+            <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
+                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
+            </a>
+            <span class="text-blue-400 text-xs font-bold uppercase tracking-[0.2em] bg-blue-950/40 px-2.5 py-1 rounded border border-blue-900/30">Admin Panel</span>
+        </div>
+        
+        <div class="flex justify-center gap-2 w-full">
+            <a href="{{ route('admin.product.index') }}" class="text-zinc-400 hover:text-white hover:bg-zinc-800/60 font-bold px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all">PRODUCT</a>    
+            <a href="{{ route('admin.orders.index') }}" class="bg-white text-zinc-950 font-black px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">ORDERS</a>
+        </div>
+        
+        <div class="flex justify-end">
             <form method="POST" action="{{ route('logout') }}" class="m-0 p-0">
                 @csrf
                 <button type="submit" class="bg-transparent border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white font-bold px-4 py-2 text-xs tracking-wider rounded-lg transition-all uppercase">LOG OUT</button>
             </form>
+        </div>
+
     </nav>
 
     <div class="container mx-auto p-6 mt-4">
@@ -92,6 +97,8 @@
                             $parsedHp = $matches[2];
                             $parsedAlamat = $matches[3];
                         }
+
+                        $statusBersih = strtolower(str_replace('_', ' ', $order->status_pesanan));
                     @endphp
 
                     <tr class="border-b border-zinc-800/30 bg-zinc-900/10 hover:bg-zinc-900/50 transition-all">
@@ -115,16 +122,16 @@
                         </td>
                         <td class="p-3">
                             <span class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-md border inline-block text-center w-full whitespace-nowrap
-                                {{ $order->status_pesanan == 'menunggu pembayaran' ? 'bg-amber-950/40 text-amber-400 border-amber-900/50' : '' }}
-                                {{ $order->status_pesanan == 'sudah dibayar' ? 'bg-blue-950/40 text-blue-400 border-blue-900/50' : '' }}
-                                {{ $order->status_pesanan == 'dalam perjalanan' ? 'bg-purple-950/40 text-purple-400 border-purple-900/50' : '' }}
-                                {{ $order->status_pesanan == 'selesai' ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/50' : '' }}
+                                {{ $statusBersih == 'menunggu pembayaran' ? 'bg-amber-950/40 text-amber-400 border-amber-900/50' : '' }}
+                                {{ $statusBersih == 'sudah dibayar' ? 'bg-blue-950/40 text-blue-400 border-blue-900/50' : '' }}
+                                {{ $statusBersih == 'dalam perjalanan' ? 'bg-purple-950/40 text-purple-400 border-purple-900/50' : '' }}
+                                {{ $statusBersih == 'selesai' ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/50' : '' }}
                             ">
-                                {{ $order->status_pesanan }}
+                                {{ $statusBersih }}
                             </span>
                         </td>
                         <td class="p-3">
-                            <button onclick="openModal('{{ $order->id_order }}', '{{ $order->status_pesanan }}')" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-bold px-3 py-1.5 rounded whitespace-nowrap text-xs tracking-wider uppercase transition-all">
+                            <button onclick="openModal('{{ $order->id_order }}', '{{ $statusBersih }}')" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-bold px-3 py-1.5 rounded whitespace-nowrap text-xs tracking-wider uppercase transition-all">
                                 Update
                             </button>
                         </td>

@@ -11,31 +11,34 @@
 <body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans selection:bg-blue-900/50 selection:text-blue-100 flex flex-col">
 
     <nav class="bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/60 p-4 sticky top-0 z-50 shadow-sm relative mb-8">
-        <div class="container mx-auto flex justify-between items-center relative">
+        <div class="container mx-auto flex items-center justify-between md:grid md:grid-cols-3">
             
-            <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
-                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
-            </a>
+            <div class="flex justify-start">
+                <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105">
+                    <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
+                </a>
+            </div>
             
-            <div class="hidden md:flex space-x-12 font-medium text-sm tracking-widest text-zinc-400 absolute left-1/2 transform -translate-x-1/2 w-max">
+            <div class="hidden md:flex justify-center space-x-12 font-medium text-sm tracking-widest text-zinc-400 w-full">
                 <a href="/" class="hover:text-blue-400 transition-colors">CATALOG</a>
                 <a href="{{ route('about') }}" class="hover:text-blue-400 transition-colors">ABOUT US</a>
             </div>
 
-            <div class="flex items-center space-x-6 relative z-10">
+            <div class="flex justify-end items-center space-x-6">
                 <a href="{{ route('cart.index') }}" class="text-zinc-400 hover:text-blue-400 transition-colors relative group">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </a>
 
-                <a href="{{ route('user.profile') }}" class="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-blue-500/50 px-4 py-2 rounded-full transition-all text-white">
+                <a href="{{ route('user.profile') }}" class="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-blue-500/50 px-4 py-2 rounded-full transition-all text-white drop-shadow-[0_0_8px_rgba(96,165,250,0.3)]">
                     <div class="w-6 h-6 bg-blue-600/20 border border-blue-500 text-blue-400 rounded-full flex items-center justify-center font-bold text-xs">
                         {{ substr(auth()->user()->nama ?? 'U', 0, 1) }}
                     </div>
-                    <span class="font-semibold text-sm tracking-wide">{{ auth()->user()->nama ?? 'User' }}</span>
+                    <span class="font-semibold text-sm tracking-wide truncate max-w-[100px]">{{ auth()->user()->nama ?? 'User' }}</span>
                 </a>
             </div>
+            
         </div>
     </nav>
 
