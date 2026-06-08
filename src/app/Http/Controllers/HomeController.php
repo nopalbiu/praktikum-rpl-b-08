@@ -62,7 +62,7 @@ class HomeController extends Controller
             $query->latest();
         }
 
-        $products = $query->paginate(16)->withQueryString();
+        $products = $query->paginate(15)->withQueryString();
 
         return view('home', compact('products', 'categories', 'sizes'));
     }
