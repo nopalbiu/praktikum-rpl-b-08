@@ -55,9 +55,21 @@
                 </div>
             @endif
             @if(session('error') || $errors->any())
-                <div class="bg-red-950/30 border border-red-900 text-red-400 p-4 rounded-xl mb-6 text-sm font-medium shadow-inner flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                    Gagal memproses data. Periksa kembali isian form Anda.
+                <div class="bg-red-950/30 border border-red-900 text-red-400 p-4 rounded-xl mb-6 text-sm font-medium shadow-inner">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                        <span class="font-bold">Produk gagal disimpan. Perbaiki kesalahan berikut:</span>
+                    </div>
+                    @if(session('error'))
+                        <p class="ml-4">{{ session('error') }}</p>
+                    @endif
+                    @if($errors->any())
+                        <ul class="ml-4 space-y-1 list-disc list-inside">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </div>
             @endif
 
@@ -119,31 +131,46 @@
         <div class="bg-zinc-900 border border-zinc-800 w-full max-w-lg rounded-2xl p-8 shadow-2xl relative my-auto">
             <h2 class="text-2xl font-black text-white mb-6 uppercase tracking-tight border-b border-zinc-800 pb-3">Tambah Produk Baru</h2>
 
+            {{-- Error detail di dalam modal --}}
+            @if($errors->any() && !$errors->has('edit_mode'))
+            <div class="bg-red-950/30 border border-red-800 text-red-400 p-4 rounded-xl mb-5 text-xs">
+                <p class="font-bold mb-2 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span> Periksa kesalahan berikut:</p>
+                <ul class="space-y-1 list-disc list-inside">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+
             <form action="{{ route('admin.product.store') }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-5">
                 @csrf
                 
                 <div class="flex flex-col gap-1.5">
                     <label class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Nama Produk</label>
-                    <input type="text" name="nama_product" required 
-                        class="bg-zinc-950/60 text-white border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all shadow-inner">
+                    <input type="text" name="nama_product" value="{{ old('nama_product') }}" required 
+                        class="bg-zinc-950/60 text-white border {{ $errors->has('nama_product') ? 'border-red-500/80' : 'border-zinc-800/80' }} rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all shadow-inner">
                 </div>
 
                 <div class="flex flex-col gap-1.5">
                     <label class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Deskripsi</label>
                     <textarea name="deskripsi" rows="3" required 
-                        class="bg-zinc-950/60 text-white border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all shadow-inner resize-none"></textarea>
+                        class="bg-zinc-950/60 text-white border {{ $errors->has('deskripsi') ? 'border-red-500/80' : 'border-zinc-800/80' }} rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all shadow-inner resize-none">{{ old('deskripsi') }}</textarea>
                 </div>
 
                 <div class="flex flex-col gap-1.5">
                     <label class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Harga (Rp)</label>
-                    <input type="number" name="harga" required 
-                        class="bg-zinc-950/60 text-white border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all shadow-inner font-mono">
+                    <input type="number" name="harga" value="{{ old('harga') }}" required 
+                        class="bg-zinc-950/60 text-white border {{ $errors->has('harga') ? 'border-red-500/80' : 'border-zinc-800/80' }} rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all shadow-inner font-mono">
                 </div>
 
                 <div class="flex flex-col gap-3 border-t border-b border-zinc-800/80 py-4 my-1">
                     <div class="flex flex-col gap-1">
                         <label class="font-bold text-blue-400 text-xs uppercase tracking-wider">Foto Utama (Wajib)</label>
-                        <input type="file" name="foto_utama" accept="image/*" required class="text-zinc-400 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer">
+                        <input type="file" name="foto_utama" accept="image/*" required class="text-zinc-400 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer {{ $errors->has('foto_utama') ? 'ring-1 ring-red-500/50 rounded-lg' : '' }}">
+                        @if($errors->has('foto_utama'))
+                            <p class="text-red-400 text-[10px] mt-0.5">{{ $errors->first('foto_utama') }}</p>
+                        @endif
                     </div>
 
                     <div class="flex flex-col gap-1 mt-2">
@@ -154,21 +181,27 @@
 
                 <div class="flex justify-between items-center bg-zinc-950/40 border border-zinc-800/60 p-4 rounded-xl">
                     <label class="text-zinc-300 text-xs font-bold uppercase tracking-wider cursor-pointer select-none" for="add-multi-size">Aktifkan Multi Size Item</label>
-                    <input type="checkbox" id="add-multi-size" name="is_multi_size" value="1" class="w-5 h-5 cursor-pointer accent-blue-500 rounded border-zinc-800 bg-zinc-950 focus:ring-0 focus:ring-offset-0" onchange="toggleSize('add')">
+                    <input type="checkbox" id="add-multi-size" name="is_multi_size" value="1" class="w-5 h-5 cursor-pointer accent-blue-500 rounded border-zinc-800 bg-zinc-950 focus:ring-0 focus:ring-offset-0" {{ old('is_multi_size') ? 'checked' : '' }} onchange="toggleSize('add')">
                 </div>
 
-                <div id="add-stok-tunggal" class="flex flex-col gap-1.5 block">
-                    <label class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Total Stok (All Size)</label>
-                    <input type="number" name="stok_tunggal" class="bg-zinc-950/60 text-white border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all font-mono">
+                <div id="add-stok-tunggal" class="flex flex-col gap-1.5 {{ old('is_multi_size') ? 'hidden' : 'block' }}">
+                    <label class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Total Stok (All Size) <span class="text-red-400">*</span></label>
+                    <input type="number" name="stok_tunggal" value="{{ old('stok_tunggal') }}" class="bg-zinc-950/60 text-white border {{ $errors->has('stok_tunggal') ? 'border-red-500/80' : 'border-zinc-800/80' }} rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all font-mono">
+                    @if($errors->has('stok_tunggal'))
+                        <p class="text-red-400 text-[10px] mt-0.5">{{ $errors->first('stok_tunggal') }}</p>
+                    @endif
                 </div>
 
-                <div id="add-stok-multi" class="hidden flex-col gap-2 bg-zinc-950/20 p-4 rounded-xl border border-zinc-800/60">
-                    <label class="font-bold text-blue-400 text-xs uppercase tracking-wider mb-2">Stok Per Ukuran:</label>
+                <div id="add-stok-multi" class="{{ old('is_multi_size') ? 'flex' : 'hidden' }} flex-col gap-2 bg-zinc-950/20 p-4 rounded-xl border {{ $errors->has('stok_ukuran') ? 'border-red-500/50' : 'border-zinc-800/60' }}">
+                    <label class="font-bold text-blue-400 text-xs uppercase tracking-wider mb-2">Stok Per Ukuran: <span class="text-red-400">*</span></label>
+                    @if($errors->has('stok_ukuran'))
+                        <p class="text-red-400 text-[10px] -mt-1 mb-1">{{ $errors->first('stok_ukuran') }}</p>
+                    @endif
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">S</span> <input type="number" name="stok_ukuran[2]" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
-                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">M</span> <input type="number" name="stok_ukuran[3]" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
-                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">L</span> <input type="number" name="stok_ukuran[4]" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
-                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">XL</span> <input type="number" name="stok_ukuran[5]" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">S</span> <input type="number" name="stok_ukuran[2]" value="{{ old('stok_ukuran.2') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">M</span> <input type="number" name="stok_ukuran[3]" value="{{ old('stok_ukuran.3') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">L</span> <input type="number" name="stok_ukuran[4]" value="{{ old('stok_ukuran.4') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">XL</span> <input type="number" name="stok_ukuran[5]" value="{{ old('stok_ukuran.5') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
                     </div>
                 </div>
 
@@ -301,6 +334,29 @@
                 stokMulti.classList.remove('flex');
             }
         }
+
+        // ================================================================
+        // Auto-buka modal tambah produk jika ada error validasi dari server
+        // ================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            @if($errors->any() && !$errors->has('edit_mode'))
+                openModal('modal-tambah');
+                // Scroll ke atas dalam modal agar error terlihat
+                const modal = document.getElementById('modal-tambah');
+                if (modal) modal.scrollTop = 0;
+            @endif
+
+            // Anti double-submit untuk form tambah produk
+            const formTambah = document.querySelector('#modal-tambah form');
+            const btnSimpan = formTambah ? formTambah.querySelector('button[type="submit"]') : null;
+
+            if (formTambah && btnSimpan) {
+                formTambah.addEventListener('submit', function() {
+                    btnSimpan.disabled = true;
+                    btnSimpan.innerHTML = '<span class="inline-flex items-center gap-2 justify-center"><svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Menyimpan...</span>';
+                });
+            }
+        });
     </script>
 </body>
 </html>
