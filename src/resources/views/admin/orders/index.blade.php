@@ -97,6 +97,8 @@
                             $parsedHp = $matches[2];
                             $parsedAlamat = $matches[3];
                         }
+
+                        $statusBersih = strtolower(str_replace('_', ' ', $order->status_pesanan));
                     @endphp
 
                     <tr class="border-b border-zinc-800/30 bg-zinc-900/10 hover:bg-zinc-900/50 transition-all">
@@ -120,16 +122,16 @@
                         </td>
                         <td class="p-3">
                             <span class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-md border inline-block text-center w-full whitespace-nowrap
-                                {{ $order->status_pesanan == 'menunggu pembayaran' ? 'bg-amber-950/40 text-amber-400 border-amber-900/50' : '' }}
-                                {{ $order->status_pesanan == 'sudah dibayar' ? 'bg-blue-950/40 text-blue-400 border-blue-900/50' : '' }}
-                                {{ $order->status_pesanan == 'dalam perjalanan' ? 'bg-purple-950/40 text-purple-400 border-purple-900/50' : '' }}
-                                {{ $order->status_pesanan == 'selesai' ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/50' : '' }}
+                                {{ $statusBersih == 'menunggu pembayaran' ? 'bg-amber-950/40 text-amber-400 border-amber-900/50' : '' }}
+                                {{ $statusBersih == 'sudah dibayar' ? 'bg-blue-950/40 text-blue-400 border-blue-900/50' : '' }}
+                                {{ $statusBersih == 'dalam perjalanan' ? 'bg-purple-950/40 text-purple-400 border-purple-900/50' : '' }}
+                                {{ $statusBersih == 'selesai' ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/50' : '' }}
                             ">
-                                {{ $order->status_pesanan }}
+                                {{ $statusBersih }}
                             </span>
                         </td>
                         <td class="p-3">
-                            <button onclick="openModal('{{ $order->id_order }}', '{{ $order->status_pesanan }}')" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-bold px-3 py-1.5 rounded whitespace-nowrap text-xs tracking-wider uppercase transition-all">
+                            <button onclick="openModal('{{ $order->id_order }}', '{{ $statusBersih }}')" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-bold px-3 py-1.5 rounded whitespace-nowrap text-xs tracking-wider uppercase transition-all">
                                 Update
                             </button>
                         </td>

@@ -12,7 +12,10 @@ class AdminOrderController extends Controller
         $query = Order::with(['user', 'items.variant.product']);
 
         if ($request->filled('status')) {
-            $query->where('status_pesanan', $request->status);
+            $statusSpasi = str_replace('_', ' ', $request->status);
+            $statusGarisBawah = str_replace(' ', '_', $request->status);
+            
+            $query->whereIn('status_pesanan', [$statusSpasi, $statusGarisBawah]);
         }
 
         $sortId = $request->get('sort_id', 'desc');

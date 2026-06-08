@@ -45,7 +45,6 @@ class CheckoutController extends Controller
                 ->with('error', 'Keranjang belanja kosong.');
         }
 
-        // Filter cart items only selected
         $cart->setRelation('items', $cart->items->filter(function($item) use ($selectedItems) {
             return in_array($item->id_cart_item, $selectedItems);
         }));
