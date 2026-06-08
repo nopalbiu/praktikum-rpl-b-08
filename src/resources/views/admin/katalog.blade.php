@@ -9,22 +9,27 @@
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased selection:bg-blue-950 selection:text-blue-200">
 
-    <nav class="bg-zinc-900/60 backdrop-blur-md border-b border-zinc-800/80 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
-        <div class="flex items-center gap-6">
+    <nav class="bg-zinc-900/60 backdrop-blur-md border-b border-zinc-800/80 px-6 py-4 grid grid-cols-3 items-center sticky top-0 z-40">
+        
+        <div class="flex items-center gap-6 justify-start">
             <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
                 <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
             </a>
             <span class="text-blue-400 text-xs font-bold uppercase tracking-[0.2em] bg-blue-950/40 px-2.5 py-1 rounded border border-blue-900/30">Admin Panel</span>
         </div>
-        <div class="flex gap-2">
-            <a href="{{ route('admin.product.index') }}" class="bg-white text-zinc-950 font-black px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">PRODUCT</a>
-            <a href="{{ route('admin.orders.index') }}" class="text-zinc-400 hover:text-white hover:bg-zinc-800/60 font-bold px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all">ORDERS</a>
-        </div>
         
-        <form method="POST" action="{{ route('logout') }}" class="m-0 p-0">
-            @csrf
-            <button type="submit" class="bg-transparent border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white font-bold px-4 py-2 text-xs tracking-wider rounded-lg transition-all uppercase">LOG OUT</button>
-        </form>
+        <div class="flex justify-center gap-2 w-full">
+            <a href="{{ route('admin.product.index') }}" class="bg-white text-zinc-950 font-black px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">PRODUCT</a>    
+            <a href="{{ route('admin.orders.index') }}" class="text-zinc-400 hover:text-white hover:bg-zinc-800/60 font-bold px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all">ORDERS</a>    
+        </div>
+
+        <div class="flex justify-end">
+            <form method="POST" action="{{ route('logout') }}" class="m-0 p-0">
+                @csrf
+                <button type="submit" class="bg-transparent border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white font-bold px-4 py-2 text-xs tracking-wider rounded-lg transition-all uppercase">LOG OUT</button>
+            </form>
+        </div>
+
     </nav>
 
     <main class="p-8 max-w-7xl mx-auto w-full">
