@@ -157,7 +157,7 @@
 
                     <div class="flex flex-col gap-4 mb-12 border-b border-zinc-800/60 pb-12">
                         @auth
-                            <button type="submit" class="w-full bg-white hover:bg-zinc-200 text-zinc-950 font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]">
+                            <button type="submit" id="btn-add-to-cart" class="w-full bg-white hover:bg-zinc-200 text-zinc-950 font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)] disabled:opacity-60 disabled:cursor-not-allowed">
                                 Add to Cart
                             </button>
                         @else
@@ -167,7 +167,7 @@
                         @endauth
 
                         @auth
-                            <button type="submit" formaction="{{ route('cart.buyNow', $product->id_product) }}" class="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-500 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase">
+                            <button type="submit" id="btn-buy-now" formaction="{{ route('cart.buyNow', $product->id_product) }}" class="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-500 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase disabled:opacity-60 disabled:cursor-not-allowed">
                                 Buy it now
                             </button>
                         @else
@@ -200,43 +200,17 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const btnMinus = document.getElementById('btn-minus');
-            const btnPlus = document.getElementById('btn-plus');
-            const qtyInput = document.getElementById('qty-input');
-
-            btnMinus.addEventListener('click', function() {
-                let currentValue = parseInt(qtyInput.value);
-                if (currentValue > 1) qtyInput.value = currentValue - 1;
-            });
-
-            btnPlus.addEventListener('click', function() {
-                let currentValue = parseInt(qtyInput.value);
-                if (currentValue < 99) qtyInput.value = currentValue + 1;
-            });
-
-            // Logika ganti gambar dari thumbnail
-            const thumbnails = document.querySelectorAll('.thumbnail-btn');
-            const mainImage = document.getElementById('main-image');
-
-            thumbnails.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    mainImage.src = this.getAttribute('data-src');
-                    // Reset styling thumbnail lain
-                    thumbnails.forEach(t => {
-                        t.classList.remove('border-zinc-300', 'shadow-[0_0_10px_rgba(255,255,255,0.1)]');
-                        t.classList.add('border-zinc-800/80');
-                    });
-                    // Aktifkan styling thumbnail yang diklik
-                    this.classList.remove('border-zinc-800/80');
-                    this.classList.add('border-zinc-300', 'shadow-[0_0_10px_rgba(255,255,255,0.1)]');
-                });
-            });
-
-            // Logika dinamis untuk Size dan Ketersediaan Stok
+            const btnMinus    = document.getElementById('btn-minus');
+            const btnPlus     = document.getElementById('btn-plus');
+            const qtyInput    = document.getElementById('qty-input');
+            const cartForm    = document.getElementById('cart-form');
+            const btnAddToCart = document.getElementById('btn-add-to-cart');
+            const btnBuyNow   = document.getElementById('btn-buy-now');
             const stockDisplay = document.getElementById('stock-display');
-            const sizeRadios = document.querySelectorAll('.size-radio');
-            let selectedRadio = null;
-            
+
+            // ================================================================
+            // Data stok dari server
+            // ================================================================
             const totalStock = {{ $totalStock }};
             const stockData = {
                 @foreach($variants as $variant)
@@ -244,21 +218,163 @@
                 @endforeach
             };
 
+            // ================================================================
+            // Helpers: aktifkan / nonaktifkan tombol beli berdasarkan stok
+            // ================================================================
+            function setButtonsDisabled(disabled, reason) {
+                [btnAddToCart, btnBuyNow].forEach(btn => {
+                    if (!btn) return;
+                    btn.disabled = disabled;
+                    if (disabled) {
+                        btn.title = reason || 'Tidak tersedia';
+                        btn.classList.add('opacity-50', 'cursor-not-allowed');
+                        btn.classList.remove('hover:bg-zinc-200', 'hover:bg-zinc-800');
+                    } else {
+                        btn.title = '';
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        btn.classList.add('hover:bg-zinc-200');
+                    }
+                });
+            }
+
+            // Cek stok awal (totalStock = jumlah semua variant)
+            if (totalStock <= 0) {
+                setButtonsDisabled(true, 'Stok habis');
+                if (btnAddToCart) btnAddToCart.textContent = 'Stok Habis';
+                if (btnBuyNow) btnBuyNow.textContent = 'Stok Habis';
+            }
+
+            // ================================================================
+            // Qty +/- (batasi sesuai stok ukuran yang dipilih)
+            // ================================================================
+            let currentMaxStock = totalStock;
+
+            btnMinus && btnMinus.addEventListener('click', function() {
+                let val = parseInt(qtyInput.value);
+                if (val > 1) qtyInput.value = val - 1;
+            });
+
+            btnPlus && btnPlus.addEventListener('click', function() {
+                let val = parseInt(qtyInput.value);
+                if (val < Math.max(1, currentMaxStock)) qtyInput.value = val + 1;
+            });
+
+            // ================================================================
+            // Ganti gambar dari thumbnail
+            // ================================================================
+            const thumbnails = document.querySelectorAll('.thumbnail-btn');
+            const mainImage  = document.getElementById('main-image');
+
+            thumbnails.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    mainImage.src = this.getAttribute('data-src');
+                    thumbnails.forEach(t => {
+                        t.classList.remove('border-zinc-300', 'shadow-[0_0_10px_rgba(255,255,255,0.1)]');
+                        t.classList.add('border-zinc-800/80');
+                    });
+                    this.classList.remove('border-zinc-800/80');
+                    this.classList.add('border-zinc-300', 'shadow-[0_0_10px_rgba(255,255,255,0.1)]');
+                });
+            });
+
+            // ================================================================
+            // Pilihan ukuran → update stok, batasi qty, nonaktifkan jika stok 0
+            // ================================================================
+            const sizeRadios = document.querySelectorAll('.size-radio');
+            let selectedRadio = null;
+
             sizeRadios.forEach(radio => {
-                radio.addEventListener('click', function(e) {
+                radio.addEventListener('click', function() {
+                    // Toggle deselect
                     if (selectedRadio === this) {
                         this.checked = false;
                         selectedRadio = null;
+                        currentMaxStock = totalStock;
                         stockDisplay.innerText = totalStock;
+
+                        // Reset tombol ke state awal berdasarkan totalStock
+                        if (totalStock <= 0) {
+                            setButtonsDisabled(true, 'Stok habis');
+                        } else {
+                            setButtonsDisabled(false);
+                            if (btnAddToCart) btnAddToCart.textContent = 'Add to Cart';
+                            if (btnBuyNow)    btnBuyNow.textContent    = 'Buy it now';
+                        }
+                        qtyInput.value = 1;
+                        return;
+                    }
+
+                    selectedRadio = this;
+                    const stok = stockData[this.value] !== undefined ? stockData[this.value] : 0;
+                    currentMaxStock = stok;
+                    stockDisplay.innerText = stok;
+
+                    if (stok <= 0) {
+                        // Stok ukuran ini = 0
+                        setButtonsDisabled(true, 'Ukuran ini habis');
+                        if (btnAddToCart) btnAddToCart.textContent = 'Stok Habis';
+                        if (btnBuyNow)    btnBuyNow.textContent    = 'Stok Habis';
+                        qtyInput.value = 0;
                     } else {
-                        selectedRadio = this;
-                        stockDisplay.innerText = stockData[this.value] || 0;
+                        setButtonsDisabled(false);
+                        if (btnAddToCart) btnAddToCart.textContent = 'Add to Cart';
+                        if (btnBuyNow)    btnBuyNow.textContent    = 'Buy it now';
+                        // Pastikan qty tidak melebihi stok
+                        if (parseInt(qtyInput.value) > stok) qtyInput.value = stok;
+                        if (parseInt(qtyInput.value) < 1)   qtyInput.value = 1;
                     }
                 });
             });
 
+            // ================================================================
+            // Anti Double-Submit yang BENAR:
+            // Catat tombol yang diklik, lalu cegah submit KEDUA via form event.
+            // Loading state ditampilkan SETELAH form diizinkan submit.
+            // ================================================================
+            let isSubmitting = false;
+            let lastClickedBtn = null;
+
+            // Hanya catat tombol mana yang diklik, JANGAN disable di sini
+            [btnAddToCart, btnBuyNow].forEach(btn => {
+                if (btn) {
+                    btn.addEventListener('click', function() {
+                        lastClickedBtn = this;
+                    });
+                }
+            });
+
+            if (cartForm) {
+                cartForm.addEventListener('submit', function(e) {
+                    // Jika sudah dalam proses submit, blokir submit kedua
+                    if (isSubmitting) {
+                        e.preventDefault();
+                        return;
+                    }
+
+                    // Tandai sedang submit
+                    isSubmitting = true;
+
+                    // Tampilkan loading di tombol yang diklik (SETELAH submit diizinkan)
+                    const spinnerSvg = '<svg class="animate-spin h-4 w-4 inline-block mr-1.5 align-[-2px]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>';
+
+                    if (lastClickedBtn === btnBuyNow) {
+                        if (btnBuyNow) btnBuyNow.innerHTML = spinnerSvg + 'Processing...';
+                    } else {
+                        if (btnAddToCart) btnAddToCart.innerHTML = spinnerSvg + 'Adding...';
+                    }
+
+                    // Disable kedua tombol SETELAH memberikan waktu untuk browser memulai submit
+                    setTimeout(() => {
+                        if (btnAddToCart) btnAddToCart.disabled = true;
+                        if (btnBuyNow)    btnBuyNow.disabled    = true;
+                    }, 50);
+                });
+            }
+
+            // ================================================================
             // Auto-hide flash messages setelah 5 detik
-            const flashMessages = document.querySelectorAll('[class*="bg-green-900"], [class*="bg-red-900"], [class*="border-green-500"], [class*="border-red-500"]');
+            // ================================================================
+            const flashMessages = document.querySelectorAll('[class*="border-green-500"], [class*="border-red-500"]');
             flashMessages.forEach(msg => {
                 setTimeout(() => {
                     msg.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
