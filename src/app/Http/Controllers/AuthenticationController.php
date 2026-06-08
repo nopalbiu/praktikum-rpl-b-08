@@ -59,7 +59,6 @@ class AuthenticationController extends Controller
 
     public function showAdminLogin()
     {
-        // Pastikan anak frontend nanti bikin file admin_login.blade.php di folder authentication ya
         return view('authentication.admin_login'); 
     }
 
@@ -85,5 +84,15 @@ class AuthenticationController extends Controller
         return back()->withErrors([
             'email' => 'Email atau password admin salah.',
         ]);
+    }
+    
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login');
     }
 }

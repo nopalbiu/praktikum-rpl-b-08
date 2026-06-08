@@ -9,6 +9,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\AdminOrderController; 
 use App\Http\Controllers\UserProfileController;
+use App\Http\Middleware\IsAdmin;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/catalog', [HomeController::class, 'index'])->name('catalog.index');
@@ -29,6 +30,8 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
     
+    Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
+    
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add/{productId}', [CartController::class, 'addToCart'])->name('cart.add');
     Route::post('/cart/buy-now/{productId}', [CartController::class, 'buyNow'])->name('cart.buyNow');
@@ -43,7 +46,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile/password', [UserProfileController::class, 'updatePassword'])->name('user.profile.password');
 });
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
     
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::put('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
