@@ -22,7 +22,6 @@ class ProductImage extends Model
         'is_primary' => 'boolean',
     ];
 
-    /** Relasi: Gambar dimiliki satu produk */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'id_product', 'id_product');

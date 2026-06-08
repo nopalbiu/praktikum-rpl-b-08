@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $product->nama_product }} - WearWoreWorn</title>
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
     <style>
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
@@ -16,167 +18,185 @@
         }
     </style>
 </head>
-<body class="bg-background text-foreground min-h-screen flex flex-col">
+<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans selection:bg-blue-900/50 selection:text-blue-100 flex flex-col">
 
-    <nav class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-md">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center">
-                <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105">
-                    <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-10 w-auto object-contain">
-                </a>
-            </div>
+    <nav class="bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/60 p-4 sticky top-0 z-50 shadow-sm relative">
+        <div class="container mx-auto flex justify-between items-center relative">
             
-            <div class="hidden md:flex space-x-8 font-semibold text-gray-300">
-                <a href="/" class="hover:text-white transition">CATALOG</a>
-                <a href="#" class="hover:text-white transition">ABOUT US</a>
+            <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
+                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
+            </a>
+            
+            <div class="hidden md:flex space-x-12 font-medium text-sm tracking-widest text-zinc-400 absolute left-1/2 transform -translate-x-1/2 w-max">
+                <a href="/" class="text-zinc-100 hover:text-blue-400 transition-colors drop-shadow-[0_0_8px_rgba(96,165,250,0.3)]">CATALOG</a>
+                <a href="{{ route('about') }}" class="hover:text-blue-400 transition-colors">ABOUT US</a>
             </div>
 
-            <div class="flex items-center space-x-4">
-                <a href="{{ route('cart.index') }}" class="text-gray-300 hover:text-white transition relative">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            <div class="flex items-center space-x-6 relative z-10">
+                <a href="{{ route('cart.index') }}" class="text-zinc-400 hover:text-blue-400 transition-colors relative group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </a>
-                
+
                 @auth
-                    <a href="{{ route('user.profile') }}" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition">Account</a>
+                    <a href="{{ route('user.profile') }}" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-blue-500/50 text-white text-sm font-semibold px-5 py-2 rounded-full transition-all">Account</a>
                 @else
-                    <a href="{{ route('login') }}" class="text-gray-300 hover:text-white font-semibold transition">Log In</a>
-                    <a href="{{ route('register') }}" class="bg-white hover:bg-gray-200 text-black font-bold px-4 py-2 rounded transition">Sign Up</a>
+                    <a href="{{ route('login') }}" class="text-zinc-400 hover:text-blue-400 text-sm font-semibold transition-colors">Log In</a>
+                    <a href="{{ route('register') }}" class="bg-white hover:bg-zinc-200 text-zinc-950 text-sm font-bold px-5 py-2 rounded-full transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]">Sign Up</a>
                 @endauth
             </div>
         </div>
     </nav>
 
-    <main class="flex-grow container mx-auto p-4 md:p-8 mt-4">
+    <main class="flex-grow container mx-auto p-4 md:p-8 lg:px-12 mt-4 max-w-7xl">
+
+        <div class="mb-8 text-xs font-bold tracking-widest uppercase text-zinc-500">
+            <a href="/" class="hover:text-blue-400 transition-colors">Home</a> 
+            <span class="mx-2">/</span> 
+            <span class="text-zinc-300">{{ $product->nama_product }}</span>
+        </div>
 
         {{-- Flash message sukses --}}
         @if(session('success'))
-        <div class="bg-green-900/60 border border-green-500 text-green-200 px-5 py-3 rounded-lg mb-6 flex items-center gap-3 shadow-lg">
+        <div class="bg-zinc-900/80 border border-green-500/50 text-green-400 px-5 py-4 rounded-xl mb-8 flex items-center gap-3 shadow-lg backdrop-blur-sm">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
             </svg>
-            <span class="font-medium">{{ session('success') }}</span>
+            <span class="font-medium text-sm tracking-wide">{{ session('success') }}</span>
         </div>
         @endif
 
         {{-- Flash message error --}}
         @if($errors->any())
-        <div class="bg-red-900/60 border border-red-500 text-red-200 px-5 py-3 rounded-lg mb-6 flex items-center gap-3 shadow-lg">
+        <div class="bg-zinc-900/80 border border-red-500/50 text-red-400 px-5 py-4 rounded-xl mb-8 flex items-center gap-3 shadow-lg backdrop-blur-sm">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
             </svg>
-            <span class="font-medium">{{ $errors->first() }}</span>
+            <span class="font-medium text-sm tracking-wide">{{ $errors->first() }}</span>
         </div>
         @endif
 
-        <div class="flex flex-col lg:flex-row gap-10">
+        <div class="flex flex-col lg:flex-row gap-12 lg:gap-16">
             
-            <div class="w-full lg:w-1/2 flex flex-col gap-4">
-                <div class="bg-gray-800 rounded-lg aspect-square flex items-center justify-center overflow-hidden border border-gray-700 shadow-lg">
+            <div class="w-full lg:w-1/2 flex flex-col gap-5">
+                <div class="bg-zinc-900/30 rounded-2xl aspect-[4/5] sm:aspect-square flex items-center justify-center overflow-hidden border border-zinc-800/60 shadow-[0_0_40px_rgba(0,0,0,0.3)] relative group p-2">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-blue-900/5 to-transparent pointer-events-none"></div>
                     @php
-                        // Memanggil gambar utama dari folder storage
-                        $mainImage = $product->images->first() ? asset('storage/' . $product->images->first()->url_gambar) : 'https://dummyimage.com/800x800/374151/fff&text=No+Image';
+                        $mainImage = $product->images->first() ? asset('storage/' . $product->images->first()->url_gambar) : 'https://dummyimage.com/800x800/27272a/fff&text=No+Image';
                     @endphp
-                    <img id="main-image" src="{{ $mainImage }}" onerror="this.onerror=null; this.src='https://dummyimage.com/800x800/374151/fff&text=No+Image';" class="w-full h-full object-cover">
+                    <img id="main-image" src="{{ $mainImage }}" onerror="this.onerror=null; this.src='https://dummyimage.com/800x800/27272a/fff&text=No+Image';" class="w-full h-full object-cover rounded-xl transition-transform duration-700 group-hover:scale-105">
                 </div>
                 
-                <div class="grid grid-cols-5 gap-4">
-                    {{-- Loop gambar produk tambahan --}}
+                <div class="grid grid-cols-5 gap-3 sm:gap-4">
                     @foreach($product->images as $index => $image)
                     <button type="button" 
-                            class="thumbnail-btn bg-gray-800 rounded-md aspect-square border {{ $index === 0 ? 'border-white border-2' : 'border-gray-700' }} hover:border-gray-500 overflow-hidden" 
+                            class="thumbnail-btn bg-zinc-900/50 rounded-xl aspect-square border {{ $index === 0 ? 'border-zinc-300 shadow-[0_0_10px_rgba(255,255,255,0.1)]' : 'border-zinc-800/80' }} hover:border-zinc-500 overflow-hidden transition-all p-1" 
                             data-src="{{ asset('storage/' . $image->url_gambar) }}">
                         <img src="{{ asset('storage/' . $image->url_gambar) }}" 
-                             onerror="this.onerror=null; this.src='https://dummyimage.com/150x150/4b5563/fff&text=Broken';" 
-                             class="w-full h-full object-cover">
+                             onerror="this.onerror=null; this.src='https://dummyimage.com/150x150/27272a/fff&text=Broken';" 
+                             class="w-full h-full object-cover rounded-lg">
                     </button>
                     @endforeach
 
-                    {{-- Memasukkan Size Chart ke galeri foto jika ada di database --}}
                     @if($product->url_size_chart)
                     <button type="button" 
-                            class="thumbnail-btn bg-gray-800 rounded-md aspect-square border border-gray-700 hover:border-gray-500 overflow-hidden relative" 
+                            class="thumbnail-btn bg-zinc-900/50 rounded-xl aspect-square border border-zinc-800/80 hover:border-zinc-500 overflow-hidden relative transition-all p-1" 
                             data-src="{{ asset('storage/' . $product->url_size_chart) }}"
                             title="Size Chart">
                         <img src="{{ asset('storage/' . $product->url_size_chart) }}" 
-                             onerror="this.onerror=null; this.src='https://dummyimage.com/150x150/4b5563/fff&text=Broken';" 
-                             class="w-full h-full object-cover opacity-70 hover:opacity-100 transition-opacity">
-                        <span class="absolute inset-0 flex items-center justify-center text-white font-bold text-sm bg-black/30 pointer-events-none drop-shadow-md">SIZE</span>
+                             onerror="this.onerror=null; this.src='https://dummyimage.com/150x150/27272a/fff&text=Broken';" 
+                             class="w-full h-full object-cover rounded-lg opacity-50 hover:opacity-100 transition-opacity">
+                        <span class="absolute inset-0 flex items-center justify-center text-white font-bold text-xs tracking-widest bg-zinc-950/60 pointer-events-none rounded-lg m-1 backdrop-blur-[2px]">SIZE</span>
                     </button>
                     @endif
                 </div>
             </div>
 
-            <div class="w-full lg:w-1/2 flex flex-col justify-start">
+            <div class="w-full lg:w-1/2 flex flex-col justify-start pt-2">
                 <form id="cart-form" action="{{ route('cart.add', $product->id_product) }}" method="POST">
                     @csrf
                     
-                    <h1 class="text-4xl font-extrabold text-white mb-2 uppercase">{{ $product->nama_product }}</h1>
-                    <p class="text-2xl font-semibold text-gray-300 mb-8">Rp {{ number_format($product->harga, 0, ',', '.') }}</p>
+                    <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 uppercase tracking-tight drop-shadow-md">{{ $product->nama_product }}</h1>
+                    <p class="text-2xl font-semibold text-zinc-400 mb-10 tracking-wide">Rp {{ number_format($product->harga, 0, ',', '.') }}</p>
 
-                    <div class="mb-6">
-                        <div class="flex justify-between items-end mb-3">
-                            <span class="font-bold text-white text-lg">Size</span>
+                    <div class="mb-8">
+                        <div class="flex justify-between items-end mb-4">
+                            <span class="text-xs font-bold tracking-widest text-zinc-500 uppercase">Select Size</span>
                         </div>
                         <div class="flex flex-wrap gap-3">
                             @forelse($variants as $variant)
                             <label class="cursor-pointer">
                                 <input type="radio" name="size" value="{{ $variant->nama_size }}" class="peer hidden size-radio">
-                                <span class="inline-flex items-center justify-center min-w-[3.5rem] h-12 px-4 rounded border border-gray-600 text-gray-300 bg-gray-800 peer-checked:bg-white peer-checked:text-black peer-checked:border-white hover:bg-gray-700 transition-colors font-bold text-lg">
+                                <span class="inline-flex items-center justify-center min-w-[3.5rem] h-12 px-4 rounded-xl border border-zinc-700 text-zinc-400 bg-zinc-900/50 peer-checked:bg-blue-900/40 peer-checked:text-blue-300 peer-checked:border-blue-500 hover:border-zinc-500 transition-all font-bold text-base shadow-sm">
                                     {{ $variant->nama_size }}
                                 </span>
                             </label>
                             @empty
-                            <span class="text-red-400 font-semibold">Varian ukuran belum tersedia.</span>
+                            <span class="text-red-400/80 font-medium text-sm bg-red-900/20 px-4 py-2 rounded-lg border border-red-900/50">Varian ukuran belum tersedia.</span>
                             @endforelse
                         </div>
-                        {{-- Error validasi size --}}
                         @error('size')
-                        <p class="text-red-400 text-sm mt-2">{{ $message }}</p>
+                        <p class="text-red-400 text-sm mt-3 flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            {{ $message }}
+                        </p>
                         @enderror
                     </div>
 
-                    <div class="mb-8 flex items-center gap-6">
-                        <div class="flex items-center border border-gray-600 rounded bg-gray-800 h-12 w-32">
-                            <button type="button" id="btn-minus" class="w-1/3 h-full flex items-center justify-center text-gray-400 hover:text-white transition font-bold text-xl">-</button>
-                            <input type="number" id="qty-input" name="quantity" value="1" min="1" max="99" class="w-1/3 h-full text-center bg-transparent text-white font-bold focus:outline-none" readonly>
-                            <button type="button" id="btn-plus" class="w-1/3 h-full flex items-center justify-center text-gray-400 hover:text-white transition font-bold text-xl">+</button>
+                    <div class="mb-10 flex flex-wrap items-center gap-6">
+                        <div class="flex items-center border border-zinc-700/80 rounded-xl bg-zinc-900/50 h-12 w-36 shadow-inner overflow-hidden">
+                            <button type="button" id="btn-minus" class="w-1/3 h-full flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors font-bold text-xl">-</button>
+                            <input type="number" id="qty-input" name="quantity" value="1" min="1" max="99" class="w-1/3 h-full text-center bg-transparent text-white font-bold focus:outline-none text-lg" readonly>
+                            <button type="button" id="btn-plus" class="w-1/3 h-full flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors font-bold text-xl">+</button>
                         </div>
-                        <div class="text-gray-400 text-lg">
-                            Stok: <span id="stock-display" class="font-bold text-white">{{ $totalStock }}</span>
+                        <div class="text-zinc-500 text-sm tracking-wide bg-zinc-900/30 px-4 py-2.5 rounded-lg border border-zinc-800/60">
+                            Available Stock: <span id="stock-display" class="font-bold text-zinc-200 ml-1">{{ $totalStock }}</span>
                         </div>
                     </div>
 
-                    <div class="flex flex-col gap-4 mb-10 border-b border-gray-700 pb-10">
+                    <div class="flex flex-col gap-4 mb-12 border-b border-zinc-800/60 pb-12">
                         @auth
-                            <button type="submit" class="w-full bg-gray-200 hover:bg-white text-black font-bold py-4 px-4 rounded transition duration-200 text-lg">
+                            <button type="submit" class="w-full bg-white hover:bg-zinc-200 text-zinc-950 font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]">
                                 Add to Cart
                             </button>
                         @else
-                            <a href="{{ route('login') }}" class="w-full bg-gray-200 hover:bg-white text-black font-bold py-4 px-4 rounded transition duration-200 text-lg text-center block">
+                            <a href="{{ route('login') }}" class="w-full bg-white hover:bg-zinc-200 text-zinc-950 font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase text-center block shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]">
                                 Add to Cart
                             </a>
                         @endauth
+
                         @auth
-                            <button type="submit" formaction="{{ route('cart.buyNow', $product->id_product) }}" class="w-full bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-bold py-4 px-4 rounded transition duration-200 text-lg">
+                            <button type="submit" formaction="{{ route('cart.buyNow', $product->id_product) }}" class="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-500 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase">
                                 Buy it now
                             </button>
                         @else
-                            <a href="{{ route('login') }}" class="w-full bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-bold py-4 px-4 rounded transition duration-200 text-lg text-center block">
+                            <a href="{{ route('login') }}" class="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-500 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase text-center block">
                                 Buy it now
                             </a>
                         @endauth
                     </div>
 
                     <div>
-                        <h3 class="font-bold text-xl text-white mb-3">Description</h3>
-                        <p class="text-gray-400 leading-relaxed text-base whitespace-pre-line">{{ $product->deskripsi }}</p>
+                        <h3 class="font-bold text-xs tracking-widest text-zinc-500 uppercase mb-4">Description</h3>
+                        <p class="text-zinc-400 leading-relaxed text-sm md:text-base whitespace-pre-line">{{ $product->deskripsi }}</p>
                     </div>
                 </form>
             </div>
         </div>
     </main>
+
+    <footer class="mt-16 border-t border-zinc-800/60 bg-zinc-950 pt-12 pb-8">
+        <div class="container mx-auto px-4 text-center flex flex-col items-center">
+            <div class="mb-6 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-6 w-auto object-contain">
+            </div>
+            <p class="text-zinc-600 text-sm mb-6 max-w-md">
+                Elevating street essentials. Crafted with precision, designed for the culture.
+            </p>
+            <p class="text-zinc-700 text-xs tracking-wider uppercase">&copy; 2026 WearWoreWorn. All rights reserved.</p>
+        </div>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -194,21 +214,25 @@
                 if (currentValue < 99) qtyInput.value = currentValue + 1;
             });
 
+            // Logika ganti gambar dari thumbnail
             const thumbnails = document.querySelectorAll('.thumbnail-btn');
             const mainImage = document.getElementById('main-image');
 
             thumbnails.forEach(btn => {
                 btn.addEventListener('click', function() {
                     mainImage.src = this.getAttribute('data-src');
+                    // Reset styling thumbnail lain
                     thumbnails.forEach(t => {
-                        t.classList.remove('border-white', 'border-2');
-                        t.classList.add('border-gray-700', 'border');
+                        t.classList.remove('border-zinc-300', 'shadow-[0_0_10px_rgba(255,255,255,0.1)]');
+                        t.classList.add('border-zinc-800/80');
                     });
-                    this.classList.remove('border-gray-700', 'border');
-                    this.classList.add('border-white', 'border-2');
+                    // Aktifkan styling thumbnail yang diklik
+                    this.classList.remove('border-zinc-800/80');
+                    this.classList.add('border-zinc-300', 'shadow-[0_0_10px_rgba(255,255,255,0.1)]');
                 });
             });
 
+            // Logika dinamis untuk Size dan Ketersediaan Stok
             const stockDisplay = document.getElementById('stock-display');
             const sizeRadios = document.querySelectorAll('.size-radio');
             let selectedRadio = null;
@@ -234,12 +258,13 @@
             });
 
             // Auto-hide flash messages setelah 5 detik
-            const flashMessages = document.querySelectorAll('[class*="bg-green-900"], [class*="bg-red-900"]');
+            const flashMessages = document.querySelectorAll('[class*="bg-green-900"], [class*="bg-red-900"], [class*="border-green-500"], [class*="border-red-500"]');
             flashMessages.forEach(msg => {
                 setTimeout(() => {
-                    msg.style.transition = 'opacity 0.5s ease';
+                    msg.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
                     msg.style.opacity = '0';
-                    setTimeout(() => msg.remove(), 500);
+                    msg.style.transform = 'translateY(-10px)';
+                    setTimeout(() => msg.remove(), 600);
                 }, 5000);
             });
         });

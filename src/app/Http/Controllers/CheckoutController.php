@@ -101,7 +101,6 @@ class CheckoutController extends Controller
 
         $selectedItems = $request->input('items', []);
 
-        // Filter cart items
         $cart->setRelation('items', $cart->items->filter(function($item) use ($selectedItems) {
             return in_array($item->id_cart_item, $selectedItems);
         }));
@@ -166,7 +165,6 @@ class CheckoutController extends Controller
                 'waktu_transaksi'    => now(),
             ]);
 
-            // Hanya hapus item yang di-checkout
             \App\Models\CartItem::whereIn('id_cart_item', $selectedItems)->delete();
 
             return $order;

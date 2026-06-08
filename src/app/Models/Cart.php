@@ -17,7 +17,6 @@ class Cart extends Model
         'id_user',
     ];
 
-    /** Relasi: Cart dimiliki satu user */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'id_user', 'id_user');

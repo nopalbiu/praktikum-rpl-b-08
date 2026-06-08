@@ -26,13 +26,11 @@ class Payment extends Model
         'waktu_transaksi' => 'datetime',
     ];
 
-    /** Relasi: Payment dimiliki satu order */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'id_order', 'id_order');
     }
 
-    /** Helper: Cek apakah pembayaran sudah lunas */
     public function isLunas(): bool
     {
         return $this->status_pembayaran === 'lunas';

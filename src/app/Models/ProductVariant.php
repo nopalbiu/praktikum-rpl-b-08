@@ -21,20 +21,17 @@ class ProductVariant extends Model
     protected $casts = [
         'stok' => 'integer',
     ];
- 
-    /** Relasi: Varian dimiliki satu produk */
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'id_product', 'id_product');
     }
 
-    /** Relasi: Varian merujuk ke satu size */
     public function size(): BelongsTo
     {
         return $this->belongsTo(Size::class, 'id_size', 'id_size');
     }
- 
-    /** Helper: Cek apakah varian masih tersedia */
+
     public function isInStock(): bool
     {
         return $this->stok > 0;

@@ -4,9 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-// Developer: Hesa Khansa Arka
-// NIM: L0124158
-
 class DatabaseSeeder extends Seeder
 {
     /**

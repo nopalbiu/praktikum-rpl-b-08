@@ -36,19 +36,16 @@ class User extends Authenticatable
         ];
     }
 
-    /** Relasi: User dimiliki satu role */
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'id_role', 'id_role');
     }
 
-    /** Relasi: User punya satu cart */
     public function cart(): HasOne
     {
         return $this->hasOne(Cart::class, 'id_user', 'id_user');
     }
 
-    /** Relasi: User punya banyak order */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'id_user', 'id_user');

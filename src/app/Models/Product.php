@@ -26,7 +26,6 @@ class Product extends Model
         'harga' => 'decimal:2',
     ];
 
-    /** Relasi: Produk punya banyak kategori (many-to-many) */
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -37,26 +36,22 @@ class Product extends Model
         );
     }
 
-    /** Relasi: Satu produk punya banyak varian ukuran */
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class, 'id_product', 'id_product');
     }
 
-    /** Relasi: Satu produk punya banyak gambar */
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class, 'id_product', 'id_product');
     }
 
-    /** Relasi: Gambar utama produk */
     public function primaryImage(): HasOne
     {
         return $this->hasOne(ProductImage::class, 'id_product', 'id_product')
                     ->where('is_primary', 1);
     }
 
-    /** Helper: Ambil varian berdasarkan ukuran — dipakai saat Add to Cart */
     public function getVariantBySize(string $size): ?ProductVariant
     {
         return $this->variants()
