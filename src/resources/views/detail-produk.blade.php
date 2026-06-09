@@ -20,19 +20,21 @@
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans selection:bg-blue-900/50 selection:text-blue-100 flex flex-col">
 
-    <nav class="bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/60 p-4 sticky top-0 z-50 shadow-sm relative">
-        <div class="container mx-auto flex justify-between items-center relative">
+    <nav class="bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/60 p-4 sticky top-0 z-50 shadow-sm relative mb-8">
+        <div class="container mx-auto flex items-center justify-between md:grid md:grid-cols-3 relative">
             
-            <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
-                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
-            </a>
+            <div class="flex justify-start">
+                <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
+                    <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
+                </a>
+            </div>
             
-            <div class="hidden md:flex space-x-12 font-medium text-sm tracking-widest text-zinc-400 absolute left-1/2 transform -translate-x-1/2 w-max">
+            <div class="hidden md:flex justify-center space-x-12 font-medium text-sm tracking-widest text-zinc-400 w-full relative z-10">
                 <a href="/" class="text-zinc-100 hover:text-blue-400 transition-colors drop-shadow-[0_0_8px_rgba(96,165,250,0.3)]">CATALOG</a>
                 <a href="{{ route('about') }}" class="hover:text-blue-400 transition-colors">ABOUT US</a>
             </div>
 
-            <div class="flex items-center space-x-6 relative z-10">
+            <div class="flex justify-end items-center space-x-6 relative z-10">
                 <a href="{{ route('cart.index') }}" class="text-zinc-400 hover:text-blue-400 transition-colors relative group">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -82,29 +84,45 @@
             <div class="w-full lg:w-1/2 flex flex-col gap-5">
                 <div class="bg-zinc-900/30 rounded-2xl aspect-[4/5] sm:aspect-square flex items-center justify-center overflow-hidden border border-zinc-800/60 shadow-[0_0_40px_rgba(0,0,0,0.3)] relative group p-2">
                     <div class="absolute inset-0 bg-gradient-to-tr from-blue-900/5 to-transparent pointer-events-none"></div>
+                    
+                    {{-- Pengecekan Cloudinary untuk Gambar Utama --}}
                     @php
-                        $mainImage = $product->images->first() ? asset('storage/' . $product->images->first()->url_gambar) : 'https://dummyimage.com/800x800/27272a/fff&text=No+Image';
+                        $firstImg = $product->images->first();
+                        if ($firstImg) {
+                            $mainImage = str_starts_with($firstImg->url_gambar, 'http') ? $firstImg->url_gambar : asset('storage/' . $firstImg->url_gambar);
+                        } else {
+                            $mainImage = 'https://dummyimage.com/800x800/27272a/fff&text=No+Image';
+                        }
                     @endphp
+                    
                     <img id="main-image" src="{{ $mainImage }}" onerror="this.onerror=null; this.src='https://dummyimage.com/800x800/27272a/fff&text=No+Image';" class="w-full h-full object-cover rounded-xl transition-transform duration-700 group-hover:scale-105">
                 </div>
                 
                 <div class="grid grid-cols-5 gap-3 sm:gap-4">
+                    {{-- Loop Gambar Tambahan --}}
                     @foreach($product->images as $index => $image)
+                    @php
+                        $imgUrl = str_starts_with($image->url_gambar, 'http') ? $image->url_gambar : asset('storage/' . $image->url_gambar);
+                    @endphp
                     <button type="button" 
                             class="thumbnail-btn bg-zinc-900/50 rounded-xl aspect-square border {{ $index === 0 ? 'border-zinc-300 shadow-[0_0_10px_rgba(255,255,255,0.1)]' : 'border-zinc-800/80' }} hover:border-zinc-500 overflow-hidden transition-all p-1" 
-                            data-src="{{ asset('storage/' . $image->url_gambar) }}">
-                        <img src="{{ asset('storage/' . $image->url_gambar) }}" 
+                            data-src="{{ $imgUrl }}">
+                        <img src="{{ $imgUrl }}" 
                              onerror="this.onerror=null; this.src='https://dummyimage.com/150x150/27272a/fff&text=Broken';" 
                              class="w-full h-full object-cover rounded-lg">
                     </button>
                     @endforeach
 
+                    {{-- Size Chart --}}
                     @if($product->url_size_chart)
+                    @php
+                        $sizeChartUrl = str_starts_with($product->url_size_chart, 'http') ? $product->url_size_chart : asset('storage/' . $product->url_size_chart);
+                    @endphp
                     <button type="button" 
                             class="thumbnail-btn bg-zinc-900/50 rounded-xl aspect-square border border-zinc-800/80 hover:border-zinc-500 overflow-hidden relative transition-all p-1" 
-                            data-src="{{ asset('storage/' . $product->url_size_chart) }}"
+                            data-src="{{ $sizeChartUrl }}"
                             title="Size Chart">
-                        <img src="{{ asset('storage/' . $product->url_size_chart) }}" 
+                        <img src="{{ $sizeChartUrl }}" 
                              onerror="this.onerror=null; this.src='https://dummyimage.com/150x150/27272a/fff&text=Broken';" 
                              class="w-full h-full object-cover rounded-lg opacity-50 hover:opacity-100 transition-opacity">
                         <span class="absolute inset-0 flex items-center justify-center text-white font-bold text-xs tracking-widest bg-zinc-950/60 pointer-events-none rounded-lg m-1 backdrop-blur-[2px]">SIZE</span>
@@ -237,7 +255,7 @@
                 });
             }
 
-            // Cek stok awal (totalStock = jumlah semua variant)
+            // Cek stok awal
             if (totalStock <= 0) {
                 setButtonsDisabled(true, 'Stok habis');
                 if (btnAddToCart) btnAddToCart.textContent = 'Stok Habis';
@@ -278,7 +296,7 @@
             });
 
             // ================================================================
-            // Pilihan ukuran → update stok, batasi qty, nonaktifkan jika stok 0
+            // Pilihan ukuran
             // ================================================================
             const sizeRadios = document.querySelectorAll('.size-radio');
             let selectedRadio = null;
@@ -292,7 +310,6 @@
                         currentMaxStock = totalStock;
                         stockDisplay.innerText = totalStock;
 
-                        // Reset tombol ke state awal berdasarkan totalStock
                         if (totalStock <= 0) {
                             setButtonsDisabled(true, 'Stok habis');
                         } else {
@@ -310,7 +327,6 @@
                     stockDisplay.innerText = stok;
 
                     if (stok <= 0) {
-                        // Stok ukuran ini = 0
                         setButtonsDisabled(true, 'Ukuran ini habis');
                         if (btnAddToCart) btnAddToCart.textContent = 'Stok Habis';
                         if (btnBuyNow)    btnBuyNow.textContent    = 'Stok Habis';
@@ -319,7 +335,6 @@
                         setButtonsDisabled(false);
                         if (btnAddToCart) btnAddToCart.textContent = 'Add to Cart';
                         if (btnBuyNow)    btnBuyNow.textContent    = 'Buy it now';
-                        // Pastikan qty tidak melebihi stok
                         if (parseInt(qtyInput.value) > stok) qtyInput.value = stok;
                         if (parseInt(qtyInput.value) < 1)   qtyInput.value = 1;
                     }
@@ -327,14 +342,11 @@
             });
 
             // ================================================================
-            // Anti Double-Submit yang BENAR:
-            // Catat tombol yang diklik, lalu cegah submit KEDUA via form event.
-            // Loading state ditampilkan SETELAH form diizinkan submit.
+            // Anti Double-Submit
             // ================================================================
             let isSubmitting = false;
             let lastClickedBtn = null;
 
-            // Hanya catat tombol mana yang diklik, JANGAN disable di sini
             [btnAddToCart, btnBuyNow].forEach(btn => {
                 if (btn) {
                     btn.addEventListener('click', function() {
@@ -345,16 +357,12 @@
 
             if (cartForm) {
                 cartForm.addEventListener('submit', function(e) {
-                    // Jika sudah dalam proses submit, blokir submit kedua
                     if (isSubmitting) {
                         e.preventDefault();
                         return;
                     }
 
-                    // Tandai sedang submit
                     isSubmitting = true;
-
-                    // Tampilkan loading di tombol yang diklik (SETELAH submit diizinkan)
                     const spinnerSvg = '<svg class="animate-spin h-4 w-4 inline-block mr-1.5 align-[-2px]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>';
 
                     if (lastClickedBtn === btnBuyNow) {
@@ -363,7 +371,6 @@
                         if (btnAddToCart) btnAddToCart.innerHTML = spinnerSvg + 'Adding...';
                     }
 
-                    // Disable kedua tombol SETELAH memberikan waktu untuk browser memulai submit
                     setTimeout(() => {
                         if (btnAddToCart) btnAddToCart.disabled = true;
                         if (btnBuyNow)    btnBuyNow.disabled    = true;
@@ -371,9 +378,7 @@
                 });
             }
 
-            // ================================================================
-            // Auto-hide flash messages setelah 5 detik
-            // ================================================================
+            // Auto-hide flash messages
             const flashMessages = document.querySelectorAll('[class*="border-green-500"], [class*="border-red-500"]');
             flashMessages.forEach(msg => {
                 setTimeout(() => {

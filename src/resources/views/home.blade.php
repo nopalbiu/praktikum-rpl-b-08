@@ -186,7 +186,15 @@
                         
                         <a href="{{ route('product.show', $product->nama_product) }}" class="group block cursor-pointer rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(30,58,138,0.15)] bg-zinc-900/20 border border-transparent hover:border-blue-900/30 p-2">
                             <div class="relative bg-zinc-900 rounded-lg overflow-hidden aspect-[4/5] mb-4">
-                                <img src="{{ $product->images->first() ? asset('storage/' . $product->images->first()->url_gambar) : 'https://dummyimage.com/600x800/27272a/fff&text=No+Image' }}" onerror="this.onerror=null; this.src='https://dummyimage.com/600x800/27272a/fff&text=No+Image';" alt="{{ $product->nama_product }}" class="h-full w-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out">
+                                @php
+                                    $firstImage = $product->images->first();
+                                    if ($firstImage) {
+                                        $imgUrl = str_starts_with($firstImage->url_gambar, 'http') ? $firstImage->url_gambar : asset('storage/' . $firstImage->url_gambar);
+                                    } else {
+                                        $imgUrl = 'https://dummyimage.com/600x800/27272a/fff&text=No+Image';
+                                    }
+                                @endphp
+                                <img src="{{ $imgUrl }}" onerror="this.onerror=null; this.src='https://dummyimage.com/600x800/27272a/fff&text=No+Image';" alt="{{ $product->nama_product }}" class="h-full w-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out">
                                 <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             </div>
                             
