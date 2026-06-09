@@ -12,7 +12,7 @@
         <div class="container mx-auto flex justify-between items-center relative">
             
             <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
-                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
+                <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
             </a>
             
             <div class="hidden md:flex space-x-12 font-medium text-sm tracking-widest text-zinc-400 absolute left-1/2 transform -translate-x-1/2 w-max">
@@ -45,7 +45,7 @@
             <div class="bg-zinc-900/40 p-8 sm:p-10 rounded-2xl shadow-2xl border border-zinc-800/80 backdrop-blur-md">
                 
                 <div class="flex justify-center mb-6">
-                    <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-10 w-auto opacity-90">
+                    <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-10 w-auto opacity-90">
                 </div>
 
                 <h1 class="text-3xl font-extrabold text-center mb-8 text-white tracking-tight">Create Account</h1>
@@ -97,7 +97,7 @@
     <footer class="mt-auto border-t border-zinc-800/60 bg-zinc-950 pt-12 pb-8">
         <div class="container mx-auto px-4 text-center flex flex-col items-center">
             <div class="mb-6 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
-                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-6 w-auto object-contain">
+                <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-6 w-auto object-contain">
             </div>
             <p class="text-zinc-600 text-sm mb-6 max-w-md">
                 Elevating street essentials. Crafted with precision, designed for the culture.

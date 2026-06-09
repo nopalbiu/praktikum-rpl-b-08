@@ -25,7 +25,7 @@
             
             <div class="flex justify-start">
                 <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
-                    <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
+                    <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
                 </a>
             </div>
             
@@ -207,7 +207,7 @@
     <footer class="mt-16 border-t border-zinc-800/60 bg-zinc-950 pt-12 pb-8">
         <div class="container mx-auto px-4 text-center flex flex-col items-center">
             <div class="mb-6 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
-                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-6 w-auto object-contain">
+                <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-6 w-auto object-contain">
             </div>
             <p class="text-zinc-600 text-sm mb-6 max-w-md">
                 Elevating street essentials. Crafted with precision, designed for the culture.
