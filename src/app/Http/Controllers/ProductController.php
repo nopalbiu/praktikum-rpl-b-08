@@ -21,7 +21,7 @@ class ProductController extends Controller
 
         $totalStock = $variants->sum('stok');
 
-        return view('detail-produk', [
+        return view('products.show', [
             'product' => $product,
             'variants' => $variants,
             'totalStock' => $totalStock
