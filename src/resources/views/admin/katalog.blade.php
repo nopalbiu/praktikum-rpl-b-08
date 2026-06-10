@@ -10,10 +10,9 @@
 <body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased selection:bg-blue-950 selection:text-blue-200">
 
     <nav class="bg-zinc-900/60 backdrop-blur-md border-b border-zinc-800/80 px-6 py-4 grid grid-cols-3 items-center sticky top-0 z-40">
-        
         <div class="flex items-center gap-6 justify-start">
             <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
-                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
+                <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
             </a>
             <span class="text-blue-400 text-xs font-bold uppercase tracking-[0.2em] bg-blue-950/40 px-2.5 py-1 rounded border border-blue-900/30">Admin Panel</span>
         </div>
@@ -29,7 +28,6 @@
                 <button type="submit" class="bg-transparent border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white font-bold px-4 py-2 text-xs tracking-wider rounded-lg transition-all uppercase">LOG OUT</button>
             </form>
         </div>
-
     </nav>
 
     <main class="p-8 max-w-7xl mx-auto w-full">
@@ -86,6 +84,7 @@
                             <th class="p-4 border-r border-zinc-800/40 w-24">Foto Utama</th>
                             <th class="p-4 border-r border-zinc-800/40">Nama</th>
                             <th class="p-4 border-r border-zinc-800/40 max-w-xs">Deskripsi</th>
+                            <th class="p-4 border-r border-zinc-800/40">Kategori</th>
                             <th class="p-4 border-r border-zinc-800/40">Harga</th>
                             <th class="p-4 border-r border-zinc-800/40 w-28">Total Stok</th>
                             <th class="p-4 text-center w-28">Aksi</th>
@@ -98,16 +97,32 @@
                             <td class="p-4 border-r border-zinc-800/40">
                                 @php
                                     $fotoUtama = $product->images->where('is_primary', 1)->first();
-                                    $urlFoto = $fotoUtama ? asset('storage/' . $fotoUtama->url_gambar) : 'https://dummyimage.com/50x50/18181b/71717a&text=No+Img';
+                                    if ($fotoUtama) {
+                                        $urlFoto = str_starts_with($fotoUtama->url_gambar, 'http') ? $fotoUtama->url_gambar : asset('storage/' . $fotoUtama->url_gambar);
+                                    } else {
+                                        $urlFoto = 'https://dummyimage.com/50x50/18181b/71717a&text=No+Img';
+                                    }
                                 @endphp
                                 <img src="{{ $urlFoto }}" class="w-12 h-12 object-cover rounded-lg ring-1 ring-zinc-800 shadow-md">
                             </td>
                             <td class="p-4 border-r border-zinc-800/40 font-bold text-white tracking-tight">{{ $product->nama_product }}</td>
                             <td class="p-4 border-r border-zinc-800/40 text-xs text-zinc-400 truncate max-w-[150px]">{{ $product->deskripsi }}</td>
+                            
+                            <td class="p-4 border-r border-zinc-800/40 text-xs text-zinc-300">
+                                @if($product->categories && $product->categories->count() > 0)
+                                    <span class="bg-zinc-800 px-2 py-1 rounded border border-zinc-700">{{ $product->categories->first()->nama_category }}</span>
+                                @else
+                                    <span class="text-zinc-600 italic">-</span>
+                                @endif
+                            </td>
+
                             <td class="p-4 border-r border-zinc-800/40 font-semibold text-zinc-200">Rp {{ number_format($product->harga, 0, ',', '.') }}</td>
                             <td class="p-4 border-r border-zinc-800/40 font-mono font-bold text-zinc-100">{{ $product->variants->sum('stok') }}</td>
                             <td class="p-4 text-center space-x-3 whitespace-nowrap">
-                                <button onclick="openEditModal({{ $product }})" class="text-zinc-400 hover:text-blue-400 transition-colors text-base p-1" title="Edit">✏️</button>
+                                @php
+                                    $catId = ($product->categories && $product->categories->count() > 0) ? $product->categories->first()->id_category : '';
+                                @endphp
+                                <button onclick="openEditModal({{ $product }}, '{{ $catId }}')" class="text-zinc-400 hover:text-blue-400 transition-colors text-base p-1" title="Edit">✏️</button>
                                 
                                 <form action="{{ route('admin.product.destroy', $product->id_product) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus produk ini?');">
                                     @csrf
@@ -118,7 +133,7 @@
                         </tr>
                         @empty
                         <tr class="bg-zinc-900/20">
-                            <td colspan="7" class="p-12 text-center font-medium text-zinc-500 tracking-wide">Belum ada data produk di database.</td>
+                            <td colspan="8" class="p-12 text-center font-medium text-zinc-500 tracking-wide">Belum ada data produk di database.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -136,7 +151,6 @@
         <div class="bg-zinc-900 border border-zinc-800 w-full max-w-lg rounded-2xl p-8 shadow-2xl relative my-auto">
             <h2 class="text-2xl font-black text-white mb-6 uppercase tracking-tight border-b border-zinc-800 pb-3">Tambah Produk Baru</h2>
 
-            {{-- Error detail di dalam modal --}}
             @if($errors->any() && !$errors->has('edit_mode'))
             <div class="bg-red-950/30 border border-red-800 text-red-400 p-4 rounded-xl mb-5 text-xs">
                 <p class="font-bold mb-2 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span> Periksa kesalahan berikut:</p>
@@ -155,6 +169,18 @@
                     <label class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Nama Produk</label>
                     <input type="text" name="nama_product" value="{{ old('nama_product') }}" required 
                         class="bg-zinc-950/60 text-white border {{ $errors->has('nama_product') ? 'border-red-500/80' : 'border-zinc-800/80' }} rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all shadow-inner">
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Kategori Produk</label>
+                    <select name="id_category" required class="bg-zinc-950/60 text-white border {{ $errors->has('id_category') ? 'border-red-500/80' : 'border-zinc-800/80' }} rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all shadow-inner cursor-pointer appearance-none">
+                        <option value="" disabled {{ old('id_category') ? '' : 'selected' }}>-- Pilih Kategori --</option>
+                        @isset($categories)
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id_category }}" {{ old('id_category') == $cat->id_category ? 'selected' : '' }}>{{ $cat->nama_category }}</option>
+                            @endforeach
+                        @endisset
+                    </select>
                 </div>
 
                 <div class="flex flex-col gap-1.5">
@@ -179,7 +205,7 @@
                     </div>
 
                     <div class="flex flex-col gap-1 mt-2">
-                        <label class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Foto Tambahan <span class="text-[10px] font-normal normal-case text-zinc-500">(Opsional, bisa >1)</span></label>
+                        <label class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Foto Tambahan <span class="text-[10px] font-normal normal-case text-zinc-500">(Opsional)</span></label>
                         <input type="file" name="foto_tambahan[]" accept="image/*" multiple class="text-zinc-400 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer">
                     </div>
                 </div>
@@ -203,10 +229,11 @@
                         <p class="text-red-400 text-[10px] -mt-1 mb-1">{{ $errors->first('stok_ukuran') }}</p>
                     @endif
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">S</span> <input type="number" name="stok_ukuran[2]" value="{{ old('stok_ukuran.2') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
-                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">M</span> <input type="number" name="stok_ukuran[3]" value="{{ old('stok_ukuran.3') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
-                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">L</span> <input type="number" name="stok_ukuran[4]" value="{{ old('stok_ukuran.4') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
-                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">XL</span> <input type="number" name="stok_ukuran[5]" value="{{ old('stok_ukuran.5') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-8 font-bold text-zinc-500 text-xs text-center">S</span> <input type="number" name="stok_ukuran[1]" value="{{ old('stok_ukuran.1') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-8 font-bold text-zinc-500 text-xs text-center">M</span> <input type="number" name="stok_ukuran[2]" value="{{ old('stok_ukuran.2') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-8 font-bold text-zinc-500 text-xs text-center">L</span> <input type="number" name="stok_ukuran[3]" value="{{ old('stok_ukuran.3') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-8 font-bold text-zinc-500 text-xs text-center">XL</span> <input type="number" name="stok_ukuran[4]" value="{{ old('stok_ukuran.4') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-8 font-bold text-zinc-500 text-xs text-center">XXL</span> <input type="number" name="stok_ukuran[5]" value="{{ old('stok_ukuran.5') }}" class="w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
                     </div>
                 </div>
 
@@ -225,10 +252,23 @@
             <form id="form-edit" method="POST" enctype="multipart/form-data" class="flex flex-col gap-5">
                 @csrf
                 @method('PUT')
+                <input type="hidden" name="edit_mode" value="1">
                 
                 <div class="flex flex-col gap-1.5">
                     <label class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Nama Produk</label>
                     <input type="text" id="edit-nama" name="nama_product" required class="bg-zinc-950/60 text-white border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all shadow-inner">
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Kategori Produk</label>
+                    <select id="edit-category" name="id_category" required class="bg-zinc-950/60 text-white border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all shadow-inner cursor-pointer appearance-none">
+                        <option value="" disabled>-- Pilih Kategori --</option>
+                        @isset($categories)
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id_category }}">{{ $cat->nama_category }}</option>
+                            @endforeach
+                        @endisset
+                    </select>
                 </div>
                 
                 <div class="flex flex-col gap-1.5">
@@ -266,10 +306,11 @@
                 <div id="edit-stok-multi" class="hidden flex-col gap-2 bg-zinc-950/20 p-4 rounded-xl border border-zinc-800/60">
                     <label class="font-bold text-blue-400 text-xs uppercase tracking-wider mb-2">Stok Per Ukuran:</label>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">S</span> <input type="number" id="edit-stok-ukuran-2" name="stok_ukuran[2]" class="edit-stok-ukuran w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
-                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">M</span> <input type="number" id="edit-stok-ukuran-3" name="stok_ukuran[3]" class="edit-stok-ukuran w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
-                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">L</span> <input type="number" id="edit-stok-ukuran-4" name="stok_ukuran[4]" class="edit-stok-ukuran w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
-                        <div class="flex items-center gap-3"><span class="w-6 font-bold text-zinc-500 text-xs text-center">XL</span> <input type="number" id="edit-stok-ukuran-5" name="stok_ukuran[5]" class="edit-stok-ukuran w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-8 font-bold text-zinc-500 text-xs text-center">S</span> <input type="number" id="edit-stok-ukuran-1" name="stok_ukuran[1]" class="edit-stok-ukuran w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-8 font-bold text-zinc-500 text-xs text-center">M</span> <input type="number" id="edit-stok-ukuran-2" name="stok_ukuran[2]" class="edit-stok-ukuran w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-8 font-bold text-zinc-500 text-xs text-center">L</span> <input type="number" id="edit-stok-ukuran-3" name="stok_ukuran[3]" class="edit-stok-ukuran w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-8 font-bold text-zinc-500 text-xs text-center">XL</span> <input type="number" id="edit-stok-ukuran-4" name="stok_ukuran[4]" class="edit-stok-ukuran w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
+                        <div class="flex items-center gap-3"><span class="w-8 font-bold text-zinc-500 text-xs text-center">XXL</span> <input type="number" id="edit-stok-ukuran-5" name="stok_ukuran[5]" class="edit-stok-ukuran w-full bg-zinc-950/60 border border-zinc-800/80 p-2 text-sm text-white font-mono rounded-lg outline-none focus:border-zinc-700"></div>
                     </div>
                 </div>
 
@@ -290,10 +331,15 @@
             document.getElementById(modalId).classList.add('hidden');
         }
 
-        function openEditModal(product) {
+        function openEditModal(product, categoryId) {
             document.getElementById('edit-nama').value = product.nama_product;
             document.getElementById('edit-deskripsi').value = product.deskripsi;
             document.getElementById('edit-harga').value = product.harga;
+            
+            const catSelect = document.getElementById('edit-category');
+            if(catSelect && categoryId) {
+                catSelect.value = categoryId;
+            }
             
             document.getElementById('form-edit').action = '/admin/products/' + product.id_product;
 
@@ -303,7 +349,8 @@
             let isMulti = false;
             if (product.variants && product.variants.length > 0) {
                 product.variants.forEach(v => {
-                    if (v.id_size > 1) isMulti = true;
+                    // Cek apakah produk bukan "All Size" (id_size != 6)
+                    if (v.id_size !== 6) isMulti = true;
                 });
 
                 if (isMulti) {
@@ -340,18 +387,13 @@
             }
         }
 
-        // ================================================================
-        // Auto-buka modal tambah produk jika ada error validasi dari server
-        // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             @if($errors->any() && !$errors->has('edit_mode'))
                 openModal('modal-tambah');
-                // Scroll ke atas dalam modal agar error terlihat
                 const modal = document.getElementById('modal-tambah');
                 if (modal) modal.scrollTop = 0;
             @endif
 
-            // Anti double-submit untuk form tambah produk
             const formTambah = document.querySelector('#modal-tambah form');
             const btnSimpan = formTambah ? formTambah.querySelector('button[type="submit"]') : null;
 

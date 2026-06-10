@@ -14,7 +14,7 @@
         <div class="container mx-auto flex justify-between items-center relative">
             
             <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
-                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
+                <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
             </a>
             
             <div class="hidden md:flex space-x-12 font-medium text-sm tracking-widest text-zinc-400 absolute left-1/2 transform -translate-x-1/2 w-max">
@@ -41,7 +41,7 @@
 
     <main class="flex-grow container mx-auto p-4 md:p-8 mt-4 relative z-10 max-w-4xl">
         
-        <h1 class="text-3xl md:text-4xl font-extrabold text-white mb-2 tracking-tight uppercase">Keranjang Belanja</h1>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-white mb-2 tracking-tight uppercase">Shopping Cart</h1>
         <p class="text-zinc-500 text-sm mb-8">Review the items in your cart before proceeding to checkout.</p>
         
         @if(session('success'))
@@ -101,13 +101,17 @@
 
                             {{-- Thumbnail --}}
                             <div class="w-20 h-24 sm:w-24 sm:h-28 bg-zinc-900 rounded-xl overflow-hidden flex-shrink-0 border border-zinc-800/60 p-1 {{ $isOutOfStock ? 'opacity-50 grayscale-[50%]' : '' }}">
-                                @if($item->variant->product->images->first())
-                                    <img src="{{ asset('storage/' . $item->variant->product->images->first()->url_gambar) }}" 
-                                         class="w-full h-full object-cover rounded-lg"
-                                         onerror="this.onerror=null; this.src='https://dummyimage.com/150x150/27272a/fff&text=No+Img';">
-                                @else
-                                    <img src="https://dummyimage.com/150x150/27272a/fff&text=No+Img" class="w-full h-full object-cover rounded-lg">
-                                @endif
+                                @php
+                                    $firstImg = $item->variant->product->images->first();
+                                    if ($firstImg) {
+                                        $imgUrl = str_starts_with($firstImg->url_gambar, 'http') ? $firstImg->url_gambar : asset('storage/' . $firstImg->url_gambar);
+                                    } else {
+                                        $imgUrl = 'https://dummyimage.com/150x150/27272a/fff&text=No+Image';
+                                    }
+                                @endphp
+                                <img src="{{ $imgUrl }}" 
+                                     class="w-full h-full object-cover rounded-lg"
+                                     onerror="this.onerror=null; this.src='https://dummyimage.com/150x150/27272a/fff&text=No+Img';">
                             </div>
                             
                             {{-- Info produk --}}
@@ -143,13 +147,13 @@
                 </div>
 
                 <div class="mt-8 bg-zinc-900/60 border border-zinc-800/80 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-center shadow-lg backdrop-blur-md">
-                    <span class="text-lg sm:text-xl font-bold text-zinc-400 uppercase tracking-widest mb-2 sm:mb-0">Total Keranjang</span>
+                    <span class="text-lg sm:text-xl font-bold text-zinc-400 uppercase tracking-widest mb-2 sm:mb-0">Total Price</span>
                     <span id="grand-total-display" class="text-2xl sm:text-3xl font-extrabold text-blue-400">Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
                 </div>
                 
                 <div class="mt-6">
                     <button type="submit" id="btn-buy" class="block w-full bg-white hover:bg-zinc-200 text-zinc-950 font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase text-center shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:cursor-not-allowed" onclick="if(document.querySelectorAll('input[name=\'items[]\']:checked').length === 0) { alert('Pilih setidaknya satu barang untuk di-checkout.'); return false; }">
-                        Checkout Terpilih
+                        Checkout Selected Items
                     </button>
                 </div>
             </form>
@@ -180,7 +184,7 @@
     <footer class="mt-auto border-t border-zinc-800/60 bg-zinc-950 pt-12 pb-8 relative z-10">
         <div class="container mx-auto px-4 text-center flex flex-col items-center">
             <div class="mb-6 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
-                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-6 w-auto object-contain">
+                <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-6 w-auto object-contain">
             </div>
             <p class="text-zinc-600 text-sm mb-6 max-w-md">
                 Elevating street essentials. Crafted with precision, designed for the culture.

@@ -6,8 +6,8 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Cloudinary\Cloudinary; // Memanggil library Cloudinary
 
 class AdminProductController extends Controller
 {
@@ -15,20 +15,26 @@ class AdminProductController extends Controller
     {
         $search = $request->input('search');
 
-        $products = Product::with(['images', 'variants'])
+        // Mengambil semua data kategori untuk ditampilkan di dropdown modal
+        $categories = DB::table('categories')->get();
+
+        // Menambahkan 'categories' ke dalam relasi yang dipanggil
+        $products = Product::with(['images', 'variants', 'categories'])
             ->when($search, function ($query, $search) {
                 return $query->where('nama_product', 'like', '%' . $search . '%');
             })
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.katalog', compact('products', 'search'));
+        // Mengirimkan $categories ke view
+        return view('admin.katalog', compact('products', 'search', 'categories'));
     }
 
     public function store(Request $request)
     {
         $rules = [
             'nama_product' => 'required|string|max:255|unique:products,nama_product',
+            'id_category'  => 'required', // Validasi kategori wajib diisi
             'deskripsi'    => 'required|string',
             'harga'        => 'required|numeric|min:0|max:9999999999999',
             'foto_utama'   => 'required|image|mimes:jpeg,png,jpg|max:2048',
@@ -46,6 +52,7 @@ class AdminProductController extends Controller
             'nama_product.required'  => '⚠️ Nama produk wajib diisi.',
             'nama_product.unique'    => '⚠️ Nama produk "' . $request->nama_product . '" sudah digunakan, pilih nama lain.',
             'nama_product.max'       => '⚠️ Nama produk maksimal 255 karakter.',
+            'id_category.required'   => '⚠️ Kategori produk wajib dipilih.',
             'deskripsi.required'     => '⚠️ Deskripsi produk wajib diisi.',
             'harga.required'         => '⚠️ Harga produk wajib diisi.',
             'harga.numeric'          => '⚠️ Harga harus berupa angka.',
@@ -79,7 +86,8 @@ class AdminProductController extends Controller
                     }
                 }
                 if (!$adaStok) {
-                    $validator->errors()->add('stok_ukuran', '📦 Minimal isi stok untuk setidaknya satu ukuran (S, M, L, atau XL).');
+                    // Update pesan error agar menyertakan XXL
+                    $validator->errors()->add('stok_ukuran', '📦 Minimal isi stok untuk setidaknya satu ukuran (S, M, L, XL, atau XXL).');
                 }
             });
         }
@@ -92,30 +100,52 @@ class AdminProductController extends Controller
 
         DB::beginTransaction();
         try {
+            // 1. Simpan Data Produk Utama
             $product = Product::create([
                 'nama_product' => $request->nama_product,
                 'deskripsi'    => $request->deskripsi,
                 'harga'        => $request->harga,
             ]);
 
-            $pathUtama = $request->file('foto_utama')->store('products', 'public');
+            // 2. Simpan Relasi Kategori ke tabel product_category
+            DB::table('product_category')->insert([
+                'id_product'  => $product->id_product,
+                'id_category' => $request->id_category,
+            ]);
+
+            // ==========================================
+            // LOGIKA UPLOAD CLOUDINARY (STORE)
+            // ==========================================
+            $cloudinary = new Cloudinary(env('CLOUDINARY_URL'));
+
+            // Upload Foto Utama
+            $uploadUtama = $cloudinary->uploadApi()->upload($request->file('foto_utama')->getRealPath(), [
+                'folder' => 'wearworeworn_products'
+            ]);
+            
             ProductImage::create([
                 'id_product' => $product->id_product,
-                'url_gambar' => $pathUtama,
+                'url_gambar' => $uploadUtama['secure_url'],
                 'is_primary' => 1
             ]);
 
+            // Upload Foto Tambahan (Jika Ada)
             if ($request->hasFile('foto_tambahan')) {
                 foreach ($request->file('foto_tambahan') as $file) {
-                    $pathTambahan = $file->store('products', 'public');
+                    $uploadTambahan = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+                        'folder' => 'wearworeworn_products'
+                    ]);
+                    
                     ProductImage::create([
                         'id_product' => $product->id_product,
-                        'url_gambar' => $pathTambahan,
+                        'url_gambar' => $uploadTambahan['secure_url'],
                         'is_primary' => 0
                     ]);
                 }
             }
+            // ==========================================
 
+            // 3. Simpan Varian Stok
             if ($request->has('is_multi_size')) {
                 foreach ($request->stok_ukuran as $id_size => $stok) {
                     if ($stok !== null && $stok !== '') {
@@ -148,29 +178,47 @@ class AdminProductController extends Controller
     {
         $request->validate([
             'nama_product' => 'required|string|max:255|unique:products,nama_product,' . $id . ',id_product',
+            'id_category'  => 'required', // Validasi kategori
             'deskripsi'    => 'required|string',
             'harga'        => 'required|numeric',
         ], [
-            'nama_product.unique' => 'Nama produk ini sudah digunakan oleh produk lain.'
+            'nama_product.unique' => 'Nama produk ini sudah digunakan oleh produk lain.',
+            'id_category.required' => 'Kategori produk wajib dipilih.'
         ]);
 
         $product = Product::findOrFail($id);
 
+        // 1. Update Data Produk Utama
         $product->update([
             'nama_product' => $request->nama_product,
             'deskripsi'    => $request->deskripsi,
             'harga'        => $request->harga,
         ]);
 
+        // 2. Update Relasi Kategori (Gunakan updateOrInsert agar aman jika belum ada sebelumnya)
+        DB::table('product_category')->updateOrInsert(
+            ['id_product' => $id],
+            ['id_category' => $request->id_category]
+        );
+
+        // ==========================================
+        // LOGIKA UPLOAD CLOUDINARY (UPDATE)
+        // ==========================================
+        $cloudinary = new Cloudinary(env('CLOUDINARY_URL'));
+
         if ($request->hasFile('foto_utama')) {
             $oldUtama = ProductImage::where('id_product', $id)->where('is_primary', 1)->first();
             if ($oldUtama) {
-                Storage::disk('public')->delete($oldUtama->url_gambar);
                 $oldUtama->delete();
             }
+            
+            $uploadUtama = $cloudinary->uploadApi()->upload($request->file('foto_utama')->getRealPath(), [
+                'folder' => 'wearworeworn_products'
+            ]);
+
             ProductImage::create([
                 'id_product' => $id,
-                'url_gambar' => $request->file('foto_utama')->store('products', 'public'),
+                'url_gambar' => $uploadUtama['secure_url'],
                 'is_primary' => 1
             ]);
         }
@@ -178,18 +226,24 @@ class AdminProductController extends Controller
         if ($request->hasFile('foto_tambahan')) {
             $oldTambahan = ProductImage::where('id_product', $id)->where('is_primary', 0)->get();
             foreach ($oldTambahan as $ot) {
-                Storage::disk('public')->delete($ot->url_gambar);
-                $ot->delete();
+                $ot->delete(); 
             }
+            
             foreach ($request->file('foto_tambahan') as $file) {
+                $uploadTambahan = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+                    'folder' => 'wearworeworn_products'
+                ]);
+
                 ProductImage::create([
                     'id_product' => $id,
-                    'url_gambar' => $file->store('products', 'public'),
+                    'url_gambar' => $uploadTambahan['secure_url'],
                     'is_primary' => 0
                 ]);
             }
         }
+        // ==========================================
 
+        // 3. Update Varian Stok
         DB::table('product_variants')->where('id_product', $id)->delete();
         
         if ($request->has('is_multi_size')) {
@@ -217,9 +271,8 @@ class AdminProductController extends Controller
     {
         $product = Product::findOrFail($id);
         
-        foreach ($product->images as $img) {
-            Storage::disk('public')->delete($img->url_gambar);
-        }
+        // Hapus relasi kategori terlebih dahulu sebelum produk dihapus
+        DB::table('product_category')->where('id_product', $id)->delete();
         
         $product->delete();
 

@@ -11,7 +11,7 @@
     <nav class="bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/60 p-4 sticky top-0 z-50 shadow-sm">
         <div class="container mx-auto flex justify-between items-center">
             <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105">
-                <img src="{{ asset('images/logo WWW.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
+                <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
             </a>
             
             <div class="hidden md:flex space-x-12 font-medium text-sm tracking-widest text-zinc-400">

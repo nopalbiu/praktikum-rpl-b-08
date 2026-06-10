@@ -9,6 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_category', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('id_category');
             $table->unsignedBigInteger('id_product');
             $table->timestamps();
