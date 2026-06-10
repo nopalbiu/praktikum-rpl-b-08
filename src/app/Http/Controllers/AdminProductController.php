@@ -27,7 +27,7 @@ class AdminProductController extends Controller
             ->withQueryString();
 
         // Mengirimkan $categories ke view
-        return view('admin.katalog', compact('products', 'search', 'categories'));
+        return view('admin.products.index', compact('products', 'search', 'categories'));
     }
 
     public function store(Request $request)

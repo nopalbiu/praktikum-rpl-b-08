@@ -9,10 +9,6 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        // =========================================================================
-        // Ganti 'nama_cloud_kamu' dengan Cloud Name dari akun Cloudinary milikmu.
-        // Contoh: 'dxyz12345'
-        // =========================================================================
         $cloudName = 'dsejnow6k'; 
         
         $baseUrl = "https://res.cloudinary.com/dsejnow6k/image/upload/v1780994965/";

@@ -36,7 +36,7 @@ class AuthenticationController extends Controller
 
     public function showLogin()
     {
-        return view('authentication.login');
+        return view('auth.login');
     }
 
     public function processLogin(Request $request)
@@ -72,7 +72,7 @@ class AuthenticationController extends Controller
         if (Auth::attempt($credentials)) {
             if (Auth::user()->id_role == 1) {
                 $request->session()->regenerate();
-                return redirect()->route('admin.katalog'); 
+                return redirect()->route('admin.products.index'); 
             }
 
             Auth::logout();
