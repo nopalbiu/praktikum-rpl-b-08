@@ -59,6 +59,8 @@ Link login admin
     DB_PASSWORD=AVNS_hNSGeAkIRDMfil0_otb
 13. Tetap di file .env, isikan dibawah ini di paling bawah file .env
     `CLOUDINARY_URL=cloudinary://444414231413839:eM79SjKxaDTuYxLczxeJNlhz43g@dsejnow6k`
+14. Tautkan folder penyimpanan lokal agar gambar dapat diakses oleh sistem:
+    `php artisan storage:link`
 15. Buat *application key* Laravel yang baru
     `php artisan key:generate`
 16. Nyalakan server lokal Laravel
@@ -68,3 +70,31 @@ Link login admin
 
 ## Akun Testing
 - Akun Admin: adminwww@gmail.com | admin123
+
+## Screenshot
+<img width="1919" height="981" alt="image" src="https://github.com/user-attachments/assets/50cf1744-0ea7-49d4-8834-6876d28edb43" />
+<img width="1919" height="982" alt="image" src="https://github.com/user-attachments/assets/aee4e928-b730-4a65-bdf1-6457431616d7" />
+<img width="1919" height="981" alt="image" src="https://github.com/user-attachments/assets/d906fc65-d182-499b-98ab-2ea1528a161e" />
+<img width="1919" height="980" alt="image" src="https://github.com/user-attachments/assets/b739cad4-06eb-49d3-9af4-3da86b981b34" />
+<img width="1919" height="980" alt="image" src="https://github.com/user-attachments/assets/9f3c8d8b-9789-4a2e-b24d-9d30cb5920c9" />
+<img width="1918" height="978" alt="image" src="https://github.com/user-attachments/assets/8e2483dd-5965-4368-9a3d-db7fe3e4853d" />
+<img width="1918" height="979" alt="image" src="https://github.com/user-attachments/assets/b2bfd067-68d4-404c-a034-7fa558999b40" />
+<img width="1919" height="981" alt="image" src="https://github.com/user-attachments/assets/d067dd6e-cd55-4188-8f28-576729cea0cb" />
+<img width="1919" height="980" alt="image" src="https://github.com/user-attachments/assets/23f5d013-4ed2-4bd9-b9ec-24216ad4594d" />
+<img width="1919" height="979" alt="image" src="https://github.com/user-attachments/assets/bc080d40-3142-4a24-b552-e054c859cd38" />
+<img width="1919" height="980" alt="image" src="https://github.com/user-attachments/assets/237d41ca-a179-4e0d-a126-1b73794c6cbe" />
+<img width="1918" height="978" alt="image" src="https://github.com/user-attachments/assets/81444f72-a950-47dc-8972-dd781eeda112" />
+<img width="1919" height="981" alt="image" src="https://github.com/user-attachments/assets/6999b05e-6bad-4132-be63-6e953261aa3d" />
+
+
+
+
+
+
+
+
+
+
+
+
+
