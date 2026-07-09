@@ -51,7 +51,7 @@ Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->gr
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::put('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
-    Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
+    Route::get('/products', [AdminProductController::class, 'index'])->name('product.index');
     
     Route::get('/katalog-redirect', function () {
         return redirect()->route('admin.products.index');
