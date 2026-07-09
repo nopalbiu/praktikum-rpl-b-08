@@ -12,7 +12,7 @@ class AuthenticationController extends Controller
 
     public function showRegister() 
     {
-        return view('authentication.register'); 
+        return view('auth.register'); 
     }
 
     public function processRegister(Request $request)
@@ -59,7 +59,7 @@ class AuthenticationController extends Controller
 
     public function showAdminLogin()
     {
-        return view('authentication.admin_login'); 
+        return view('auth.admin-login'); 
     }
 
     public function processAdminLogin(Request $request)
