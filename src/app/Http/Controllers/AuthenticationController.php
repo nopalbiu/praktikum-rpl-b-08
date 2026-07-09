@@ -72,7 +72,7 @@ class AuthenticationController extends Controller
         if (Auth::attempt($credentials)) {
             if (Auth::user()->id_role == 1) {
                 $request->session()->regenerate();
-                return redirect()->route('admin.products.index'); 
+                return redirect()->route('admin.product.index'); 
             }
 
             Auth::logout();
