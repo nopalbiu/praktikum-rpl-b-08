@@ -18,7 +18,7 @@
         </div>
         
         <div class="flex justify-center gap-2 w-full">
-            <a href="{{ route('admin.products.index') }}" class="bg-white text-zinc-950 font-black px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">PRODUCT</a>    
+            <a href="{{ route('admin.product.index') }}" class="bg-white text-zinc-950 font-black px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">PRODUCT</a>    
             <a href="{{ route('admin.orders.index') }}" class="text-zinc-400 hover:text-white hover:bg-zinc-800/60 font-bold px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all">ORDERS</a>    
         </div>
 
@@ -39,7 +39,7 @@
                 <h1 class="text-3xl font-black text-white uppercase tracking-tight">Daftar Produk</h1>
                 
                 <div class="flex flex-wrap items-center gap-4 w-full sm:w-auto">
-                    <form action="{{ route('admin.products.index') }}" method="GET" class="flex w-full sm:w-auto shadow-inner rounded-xl overflow-hidden border border-zinc-800/80">
+                    <form action="{{ route('admin.product.index') }}" method="GET" class="flex w-full sm:w-auto shadow-inner rounded-xl overflow-hidden border border-zinc-800/80">
                         <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama produk..." 
                             class="bg-zinc-950/60 px-4 py-2.5 text-zinc-200 text-sm outline-none w-full sm:w-64 placeholder-zinc-600 focus:bg-zinc-950 transition-all">
                         <button type="submit" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-5 font-bold text-sm transition-all border-l border-zinc-800">Cari</button>
@@ -124,7 +124,7 @@
                                 @endphp
                                 <button onclick="openEditModal({{ $product }}, '{{ $catId }}')" class="text-zinc-400 hover:text-blue-400 transition-colors text-base p-1" title="Edit">✏️</button>
                                 
-                                <form action="{{ route('admin.products.destroy', $product->id_product) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus produk ini?');">
+                                <form action="{{ route('admin.product.destroy', $product->id_product) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus produk ini?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-zinc-400 hover:text-red-400 transition-colors text-base p-1" title="Hapus">🗑️</button>
@@ -162,7 +162,7 @@
             </div>
             @endif
 
-            <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-5">
+            <form action="{{ route('admin.product.store') }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-5">
                 @csrf
                 
                 <div class="flex flex-col gap-1.5">
