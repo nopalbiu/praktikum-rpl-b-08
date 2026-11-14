@@ -28,4 +28,7 @@ RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available
 RUN a2enmod rewrite
 
 EXPOSE 80
-CMD ["apache2-foreground"]
+
+# Saat container menyala: jalankan migrasi database yang belum diterapkan, baru nyalakan Apache.
+# Kalau migrasi gagal, container berhenti (web tidak jalan dengan struktur database yang tidak cocok).
+CMD ["sh", "-c", "php artisan migrate --force && exec apache2-foreground"]

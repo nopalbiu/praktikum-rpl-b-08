@@ -15,7 +15,7 @@ Aplikasi katalog fashion untuk menampilkan koleksi outfit terbaru secara interak
 3. **Autentikasi & Otorisasi Hak Akses:** Fitur Register, Login, Logout, dan perlindungan *Custom Middleware* untuk memisahkan hak akses secara aman antara halaman panel Admin dan halaman Customer biasa.
 
 ## Tech Stack
-- **Framework Backend:** Laravel 13 (PHP 8.3+)
+- **Framework Backend:** Laravel 11 (PHP)
 - **Database:** MySQL
 - **Frontend / Styling:** Tailwind CSS, Blade Templating
 - **Asset Compiler:** Vite (Node.js)
