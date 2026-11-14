@@ -85,6 +85,7 @@ class OrderIntegrityTest extends TestCase
                 'is_multi_size' => 1,
                 'stok_ukuran'   => [2 => 5],
             ]))
+            ->assertRedirect()
             ->assertSessionHasNoErrors();
 
         $this->assertSame(1, OrderItem::count(), 'Item pesanan lama tidak boleh hilang');
@@ -105,6 +106,7 @@ class OrderIntegrityTest extends TestCase
                 'is_multi_size' => 1,
                 'stok_ukuran'   => [1 => 7],
             ]))
+            ->assertRedirect()
             ->assertSessionHasNoErrors();
 
         $this->assertSame(7, $variant->fresh()->stok);
@@ -121,6 +123,7 @@ class OrderIntegrityTest extends TestCase
                 'is_multi_size' => 1,
                 'stok_ukuran'   => ['1' => '5', '2' => '6', '3' => '', '4' => '8', '5' => '9'],
             ]))
+            ->assertRedirect()
             ->assertSessionHasNoErrors();
 
         $after = $product->fresh()->variants->pluck('stok', 'id_size')->all();
@@ -163,6 +166,7 @@ class OrderIntegrityTest extends TestCase
 
         $this->actingAs($this->admin())
             ->put("/admin/products/{$product->id_product}", $this->editPayload($product, ['stok_tunggal' => 9]))
+            ->assertRedirect()
             ->assertSessionHasNoErrors();
 
         $this->actingAs($this->admin())->get('/admin/products')
@@ -257,6 +261,7 @@ class OrderIntegrityTest extends TestCase
             ->assertSessionHasErrors('status_pesanan');
 
         $this->actingAs($admin)->put("/admin/orders/{$order->id_order}/status", ['status_pesanan' => Order::STATUS_DIBATALKAN])
+            ->assertRedirect()
             ->assertSessionHasNoErrors();
         $this->assertSame(Order::STATUS_DIBATALKAN, $order->fresh()->status_pesanan);
 

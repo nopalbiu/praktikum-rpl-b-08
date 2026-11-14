@@ -122,29 +122,19 @@ class AdminProductController extends Controller
             // ==========================================
             // LOGIKA UPLOAD CLOUDINARY (STORE)
             // ==========================================
-            $cloudinary = new Cloudinary(config('services.cloudinary.url'));
-
             // Upload Foto Utama
-            $uploadUtama = $cloudinary->uploadApi()->upload($request->file('foto_utama')->getRealPath(), [
-                'folder' => 'wearworeworn_products'
-            ]);
-            
             ProductImage::create([
                 'id_product' => $product->id_product,
-                'url_gambar' => $uploadUtama['secure_url'],
+                'url_gambar' => $this->uploadImage($request->file('foto_utama')),
                 'is_primary' => 1
             ]);
 
             // Upload Foto Tambahan (Jika Ada)
             if ($request->hasFile('foto_tambahan')) {
                 foreach ($request->file('foto_tambahan') as $file) {
-                    $uploadTambahan = $cloudinary->uploadApi()->upload($file->getRealPath(), [
-                        'folder' => 'wearworeworn_products'
-                    ]);
-                    
                     ProductImage::create([
                         'id_product' => $product->id_product,
-                        'url_gambar' => $uploadTambahan['secure_url'],
+                        'url_gambar' => $this->uploadImage($file),
                         'is_primary' => 0
                     ]);
                 }
@@ -197,6 +187,20 @@ class AdminProductController extends Controller
 
         $product = Product::findOrFail($id);
 
+        // Upload foto baru dulu (kalau ada). Cloudinary hanya dipakai bila memang ada file,
+        // dan foto lama baru dihapus setelah upload berhasil.
+        try {
+            $newPrimaryUrl = $request->hasFile('foto_utama') ? $this->uploadImage($request->file('foto_utama')) : null;
+            $newExtraUrls = $request->hasFile('foto_tambahan')
+                ? array_map(fn ($file) => $this->uploadImage($file), $request->file('foto_tambahan'))
+                : [];
+        } catch (\Throwable $e) {
+            report($e);
+
+            return redirect()->back()->withInput()
+                ->withErrors(['store_error' => 'Foto gagal diunggah. Perubahan belum disimpan, coba lagi.']);
+        }
+
         // 1. Update Data Produk Utama
         $product->update([
             'nama_product'     => $request->nama_product,
@@ -214,39 +218,21 @@ class AdminProductController extends Controller
         // ==========================================
         // LOGIKA UPLOAD CLOUDINARY (UPDATE)
         // ==========================================
-        $cloudinary = new Cloudinary(config('services.cloudinary.url'));
-
-        if ($request->hasFile('foto_utama')) {
-            $oldUtama = ProductImage::where('id_product', $id)->where('is_primary', 1)->first();
-            if ($oldUtama) {
-                $oldUtama->delete();
-            }
-            
-            $uploadUtama = $cloudinary->uploadApi()->upload($request->file('foto_utama')->getRealPath(), [
-                'folder' => 'wearworeworn_products'
-            ]);
-
+        if ($newPrimaryUrl) {
+            ProductImage::where('id_product', $id)->where('is_primary', 1)->delete();
             ProductImage::create([
                 'id_product' => $id,
-                'url_gambar' => $uploadUtama['secure_url'],
+                'url_gambar' => $newPrimaryUrl,
                 'is_primary' => 1
             ]);
         }
 
-        if ($request->hasFile('foto_tambahan')) {
-            $oldTambahan = ProductImage::where('id_product', $id)->where('is_primary', 0)->get();
-            foreach ($oldTambahan as $ot) {
-                $ot->delete(); 
-            }
-            
-            foreach ($request->file('foto_tambahan') as $file) {
-                $uploadTambahan = $cloudinary->uploadApi()->upload($file->getRealPath(), [
-                    'folder' => 'wearworeworn_products'
-                ]);
-
+        if ($newExtraUrls) {
+            ProductImage::where('id_product', $id)->where('is_primary', 0)->delete();
+            foreach ($newExtraUrls as $url) {
                 ProductImage::create([
                     'id_product' => $id,
-                    'url_gambar' => $uploadTambahan['secure_url'],
+                    'url_gambar' => $url,
                     'is_primary' => 0
                 ]);
             }
@@ -276,6 +262,18 @@ class AdminProductController extends Controller
 
         return redirect()->back()->with('success', "Produk \"{$product->nama_product}\" dihapus.");
     }
+    /** Upload satu foto ke Cloudinary dan kembalikan URL-nya. Klien Cloudinary dibuat hanya saat dibutuhkan. */
+    private function uploadImage(\Illuminate\Http\UploadedFile $file): string
+    {
+        $cloudinary = new Cloudinary(config('services.cloudinary.url'));
+
+        $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+            'folder' => 'wearworeworn_products',
+        ]);
+
+        return $result['secure_url'];
+    }
+
     /**
      * Menyamakan varian produk dengan input form.
      * Varian yang sudah ada di-update (id_variant tetap), yang baru dibuat, dan yang
