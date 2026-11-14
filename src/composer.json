@@ -1,22 +1,20 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/react-starter-kit",
+    "name": "wearworeworn/web",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "WearWoreWorn - toko online fashion (Laravel + Blade + Tailwind).",
     "keywords": [
         "laravel",
-        "framework"
+        "ecommerce",
+        "fashion"
     ],
     "license": "MIT",
     "require": {
         "php": "^8.3",
         "cloudinary/cloudinary_php": "^3.1",
-        "laravel/chisel": "^0.1.0",
-        "laravel/fortify": "^1.37.2",
         "laravel/framework": "^13.7",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^3.0",
-        "laravel/wayfinder": "^0.1.14"
+        "laravel/tinker": "^3.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",
@@ -61,14 +59,11 @@
         ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
-            "npm run lint:check",
             "npm run format:check",
-            "npm run types:check",
             "@test"
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "@lint:check",
             "@php artisan test"
         ],
         "post-autoload-dump": [
@@ -82,9 +77,7 @@
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
         "post-create-project-cmd": [
-            "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@php artisan migrate --graceful --ansi"
+            "@php artisan key:generate --ansi"
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
@@ -92,10 +85,7 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": [],
-            "installer": {
-                "post-create-project": []
-            }
+            "dont-discover": []
         }
     },
     "config": {
@@ -103,7 +93,6 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
-            "pestphp/pest-plugin": true,
             "php-http/discovery": true
         }
     },

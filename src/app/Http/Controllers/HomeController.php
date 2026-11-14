@@ -11,12 +11,14 @@ class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = Category::all();
-        $sizes = Size::all();
+        $categories = Category::withCount('products')->get();
+        // "ALL Size" hanya penanda produk satu ukuran, tidak perlu jadi pilihan filter
+        $sizes = Size::where('nama_size', '!=', Size::ALL_SIZE_NAME)->orderBy('id_size')->get();
 
+        // Foto utama + satu foto tambahan (untuk efek hover di kartu produk)
         $query = Product::with(['images' => function($q) {
-            $q->where('is_primary', 1);
-        }]);
+            $q->orderByDesc('is_primary')->orderBy('id_image')->limit(2);
+        }])->withSum('variants as total_stok', 'stok');
 
         if ($request->filled('search')) {
             $query->where('nama_product', 'like', '%' . $request->search . '%');

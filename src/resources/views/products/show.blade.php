@@ -1,394 +1,250 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $product->nama_product }} - WearWoreWorn</title>
-    
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
-    <style>
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
-    </style>
-</head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans selection:bg-blue-900/50 selection:text-blue-100 flex flex-col">
+@extends('layouts.app')
 
-    <nav class="bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/60 p-4 sticky top-0 z-50 shadow-sm relative mb-8">
-        <div class="container mx-auto flex items-center justify-between md:grid md:grid-cols-3 relative">
-            
-            <div class="flex justify-start">
-                <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
-                    <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
-                </a>
+@section('title', $product->nama_product)
+@section('description', \Illuminate\Support\Str::limit(strip_tags($product->deskripsi), 150))
+
+@php
+    use App\Support\ImageUrl;
+
+    $gallery = $product->images->map(fn ($img) => [
+        'full' => ImageUrl::make($img->url_gambar, 1200),
+        'thumb' => ImageUrl::make($img->url_gambar, 200),
+        'label' => $product->nama_product,
+    ])->values();
+
+    if ($product->url_size_chart) {
+        $gallery->push([
+            'full' => ImageUrl::make($product->url_size_chart, 1200),
+            'thumb' => ImageUrl::make($product->url_size_chart, 200),
+            'label' => 'Panduan ukuran',
+            'isSizeChart' => true,
+        ]);
+    }
+    if ($gallery->isEmpty()) {
+        $gallery->push(['full' => ImageUrl::placeholder(), 'thumb' => ImageUrl::placeholder(), 'label' => $product->nama_product]);
+    }
+
+    $stockBySize = $variants->mapWithKeys(fn ($v) => [$v->nama_size => (int) $v->stok]);
+    $onlyOneSize = $variants->count() === 1;
+    $initialSize = $onlyOneSize ? $variants->first()->nama_size : old('size');
+    $sizeChartIndex = $gallery->search(fn ($g) => ! empty($g['isSizeChart']));
+    $price = 'Rp '.number_format($product->harga, 0, ',', '.');
+@endphp
+
+@section('content')
+    <main class="container-page pt-6 pb-28 sm:pt-10 lg:pb-10"
+          x-data="productPage({ stock: @js($stockBySize), total: {{ (int) $totalStock }}, size: @js($initialSize), images: {{ $gallery->count() }} })">
+
+        <nav aria-label="Breadcrumb" class="mb-6 text-sm text-zinc-500">
+            <ol class="flex items-center gap-2">
+                <li><a href="{{ route('home') }}" class="hover:text-white">Katalog</a></li>
+                <li aria-hidden="true">/</li>
+                <li class="truncate text-zinc-300" aria-current="page">{{ $product->nama_product }}</li>
+            </ol>
+        </nav>
+
+        <div class="grid gap-8 lg:grid-cols-2 lg:gap-14">
+            {{-- Galeri --}}
+            <div class="flex flex-col gap-3 lg:sticky lg:top-24 lg:self-start">
+                <div class="relative aspect-square overflow-hidden rounded-2xl bg-zinc-900">
+                    @foreach ($gallery as $i => $img)
+                        <img src="{{ $img['full'] }}" alt="{{ $img['label'] }}"
+                             x-show="active === {{ $i }}" @if ($i > 0) x-cloak loading="lazy" @endif
+                             onerror="this.onerror=null;this.src='{{ ImageUrl::placeholder() }}'"
+                             class="h-full w-full {{ empty($img['isSizeChart']) ? 'object-cover' : 'object-contain bg-white' }}">
+                    @endforeach
+
+                    @if ($gallery->count() > 1)
+                        <button type="button" @click="prev()" class="absolute top-1/2 left-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-zinc-950/70 text-white backdrop-blur hover:bg-zinc-950" aria-label="Gambar sebelumnya">
+                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.7 5.3a1 1 0 010 1.4L9.4 10l3.3 3.3a1 1 0 01-1.4 1.4l-4-4a1 1 0 010-1.4l4-4a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>
+                        </button>
+                        <button type="button" @click="next()" class="absolute top-1/2 right-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-zinc-950/70 text-white backdrop-blur hover:bg-zinc-950" aria-label="Gambar berikutnya">
+                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
+                        </button>
+                        <span class="absolute right-3 bottom-3 rounded-full bg-zinc-950/70 px-2.5 py-1 text-xs text-zinc-300 backdrop-blur" x-text="`${active + 1} / {{ $gallery->count() }}`"></span>
+                    @endif
+                </div>
+
+                @if ($gallery->count() > 1)
+                    <div class="grid grid-cols-5 gap-2 sm:gap-3">
+                        @foreach ($gallery as $i => $img)
+                            <button type="button" @click="active = {{ $i }}"
+                                    :class="active === {{ $i }} ? 'ring-2 ring-white' : 'opacity-60 hover:opacity-100'"
+                                    class="relative aspect-square overflow-hidden rounded-lg bg-zinc-900 transition"
+                                    aria-label="Lihat {{ $img['label'] }}">
+                                <img src="{{ $img['thumb'] }}" alt="" loading="lazy" class="h-full w-full object-cover"
+                                     onerror="this.onerror=null;this.src='{{ ImageUrl::placeholder() }}'">
+                                @if (! empty($img['isSizeChart']))
+                                    <span class="absolute inset-0 flex items-center justify-center bg-zinc-950/60 text-[10px] font-semibold tracking-wider text-white uppercase">Ukuran</span>
+                                @endif
+                            </button>
+                        @endforeach
+                    </div>
+                @endif
             </div>
-            
-            <div class="hidden md:flex justify-center space-x-12 font-medium text-sm tracking-widest text-zinc-400 w-full relative z-10">
-                <a href="/" class="text-zinc-100 hover:text-blue-400 transition-colors drop-shadow-[0_0_8px_rgba(96,165,250,0.3)]">CATALOG</a>
-                <a href="{{ route('about') }}" class="hover:text-blue-400 transition-colors">ABOUT US</a>
+
+            {{-- Info & pembelian --}}
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-white sm:text-4xl">{{ $product->nama_product }}</h1>
+                <p class="mt-3 text-2xl font-semibold text-white">{{ $price }}</p>
+
+                <form id="cart-form" action="{{ route('cart.add', $product->id_product) }}" method="POST" class="mt-8" @submit="validate($event)">
+                    @csrf
+
+                    {{-- Ukuran --}}
+                    <fieldset>
+                        <div class="mb-3 flex items-center justify-between">
+                            <legend class="text-sm font-medium text-zinc-300">
+                                Ukuran
+                                <span class="text-zinc-500" x-show="size" x-text="`: ${size}`"></span>
+                            </legend>
+                            @if ($sizeChartIndex !== false)
+                                <button type="button" @click="active = {{ $sizeChartIndex }}; $el.closest('main').scrollIntoView({ behavior: 'smooth' })" class="text-sm text-blue-400 hover:text-blue-300">Panduan ukuran</button>
+                            @endif
+                        </div>
+
+                        @if ($variants->isEmpty())
+                            <p class="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-400">Ukuran untuk produk ini belum tersedia.</p>
+                        @else
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($variants as $variant)
+                                    @php $habis = (int) $variant->stok <= 0; @endphp
+                                    <label class="{{ $habis ? 'cursor-not-allowed' : 'cursor-pointer' }}">
+                                        <input type="radio" name="size" value="{{ $variant->nama_size }}" x-model="size"
+                                               @disabled($habis) class="peer sr-only">
+                                        <span class="inline-flex h-11 min-w-14 items-center justify-center rounded-lg border px-4 text-sm font-medium transition-colors
+                                                     peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-blue-500
+                                                     {{ $habis
+                                                        ? 'border-zinc-800 text-zinc-600 line-through'
+                                                        : 'border-zinc-700 text-zinc-200 hover:border-zinc-500 peer-checked:border-white peer-checked:bg-white peer-checked:text-zinc-950' }}"
+                                              @if ($habis) title="Stok habis" @endif>
+                                            {{ $variant->nama_size }}
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <p x-cloak x-show="sizeError" class="field-error" role="alert">Pilih ukuran dulu.</p>
+                        @error('size') <p class="field-error">{{ $message }}</p> @enderror
+                    </fieldset>
+
+                    {{-- Jumlah --}}
+                    <div class="mt-6 flex flex-wrap items-center gap-4">
+                        <div class="flex h-11 items-center rounded-lg border border-zinc-700">
+                            <button type="button" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1" class="flex h-full w-11 items-center justify-center text-zinc-400 hover:text-white disabled:opacity-40" aria-label="Kurangi jumlah">−</button>
+                            <input type="number" name="quantity" x-model.number="qty" min="1" :max="maxQty" readonly
+                                   class="h-full w-12 [appearance:textfield] bg-transparent text-center text-sm font-semibold text-white focus:outline-none [&::-webkit-inner-spin-button]:appearance-none" aria-label="Jumlah">
+                            <button type="button" @click="qty = Math.min(maxQty, qty + 1)" :disabled="qty >= maxQty" class="flex h-full w-11 items-center justify-center text-zinc-400 hover:text-white disabled:opacity-40" aria-label="Tambah jumlah">+</button>
+                        </div>
+                        <p class="text-sm" :class="available > 0 && available <= 5 ? 'text-amber-400' : 'text-zinc-500'">
+                            <template x-if="available <= 0"><span>Stok habis</span></template>
+                            <template x-if="available > 0 && available <= 5"><span x-text="`Sisa ${available} lagi`"></span></template>
+                            <template x-if="available > 5"><span x-text="`Stok: ${available}`"></span></template>
+                        </p>
+                    </div>
+
+                    {{-- Tombol (desktop) --}}
+                    <div class="mt-8 hidden gap-3 sm:grid sm:grid-cols-2">
+                        @auth
+                            <button type="submit" class="btn btn-primary btn-lg" :disabled="available <= 0">
+                                <span x-text="available <= 0 ? 'Stok habis' : 'Tambah ke keranjang'">Tambah ke keranjang</span>
+                            </button>
+                            <button type="submit" formaction="{{ route('cart.buyNow', $product->id_product) }}" class="btn btn-secondary btn-lg" :disabled="available <= 0">Beli sekarang</button>
+                        @else
+                            <a href="{{ route('login') }}" class="btn btn-primary btn-lg">Masuk untuk membeli</a>
+                            <a href="{{ route('register') }}" class="btn btn-secondary btn-lg">Buat akun</a>
+                        @endauth
+                    </div>
+                </form>
+
+                {{-- Detail --}}
+                <div class="mt-10 divide-y divide-zinc-800 border-y border-zinc-800">
+                    <details class="group py-4" open>
+                        <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-white">
+                            Deskripsi
+                            <svg class="h-4 w-4 text-zinc-500 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.3 7.3a1 1 0 011.4 0L10 10.6l3.3-3.3a1 1 0 111.4 1.4l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.4z" clip-rule="evenodd"/></svg>
+                        </summary>
+                        <p class="mt-3 text-sm leading-relaxed whitespace-pre-line text-zinc-400">{{ $product->deskripsi ?: 'Belum ada deskripsi.' }}</p>
+                    </details>
+
+                    @if ($product->material_pakaian)
+                        <details class="group py-4">
+                            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-white">
+                                Bahan
+                                <svg class="h-4 w-4 text-zinc-500 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.3 7.3a1 1 0 011.4 0L10 10.6l3.3-3.3a1 1 0 111.4 1.4l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.4z" clip-rule="evenodd"/></svg>
+                            </summary>
+                            <p class="mt-3 text-sm text-zinc-400">{{ $product->material_pakaian }}</p>
+                        </details>
+                    @endif
+
+                    <details class="group py-4">
+                        <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-white">
+                            Pengiriman dan pembayaran
+                            <svg class="h-4 w-4 text-zinc-500 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.3 7.3a1 1 0 011.4 0L10 10.6l3.3-3.3a1 1 0 111.4 1.4l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.4z" clip-rule="evenodd"/></svg>
+                        </summary>
+                        <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-zinc-400">
+                            <li>Dikirim lewat JNE, J&amp;T, atau SiCepat.</li>
+                            <li>Pembayaran lewat transfer bank (BCA, Mandiri, BRI).</li>
+                            <li>Pesanan dibatalkan otomatis jika belum dibayar dalam 24 jam.</li>
+                        </ul>
+                    </details>
+                </div>
             </div>
+        </div>
 
-            <div class="flex justify-end items-center space-x-6 relative z-10">
-                <a href="{{ route('cart.index') }}" class="text-zinc-400 hover:text-blue-400 transition-colors relative group">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </a>
-
+        {{-- Bar beli yang menempel di bawah (mobile) --}}
+        <div class="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-800 bg-zinc-950/95 px-4 py-3 backdrop-blur sm:hidden">
+            <div class="flex items-center gap-3">
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-xs text-zinc-500" x-text="size ? `Ukuran ${size} · ${qty} pcs` : 'Pilih ukuran'">Pilih ukuran</p>
+                    <p class="text-base font-semibold text-white">{{ $price }}</p>
+                </div>
                 @auth
-                    <a href="{{ route('user.profile') }}" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-blue-500/50 text-white text-sm font-semibold px-5 py-2 rounded-full transition-all">Account</a>
+                    <button type="submit" form="cart-form" formaction="{{ route('cart.buyNow', $product->id_product) }}" class="btn btn-secondary" :disabled="available <= 0" aria-label="Beli sekarang">Beli</button>
+                    <button type="submit" form="cart-form" class="btn btn-primary" :disabled="available <= 0">
+                        <span x-text="available <= 0 ? 'Habis' : '+ Keranjang'">+ Keranjang</span>
+                    </button>
                 @else
-                    <a href="{{ route('login') }}" class="text-zinc-400 hover:text-blue-400 text-sm font-semibold transition-colors">Log In</a>
-                    <a href="{{ route('register') }}" class="bg-white hover:bg-zinc-200 text-zinc-950 text-sm font-bold px-5 py-2 rounded-full transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]">Sign Up</a>
+                    <a href="{{ route('login') }}" class="btn btn-primary">Masuk untuk membeli</a>
                 @endauth
             </div>
         </div>
-    </nav>
-
-    <main class="flex-grow container mx-auto p-4 md:p-8 lg:px-12 mt-4 max-w-7xl">
-
-        <div class="mb-8 text-xs font-bold tracking-widest uppercase text-zinc-500">
-            <a href="/" class="hover:text-blue-400 transition-colors">Home</a> 
-            <span class="mx-2">/</span> 
-            <span class="text-zinc-300">{{ $product->nama_product }}</span>
-        </div>
-
-        {{-- Flash message sukses --}}
-        @if(session('success'))
-        <div class="bg-zinc-900/80 border border-green-500/50 text-green-400 px-5 py-4 rounded-xl mb-8 flex items-center gap-3 shadow-lg backdrop-blur-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            <span class="font-medium text-sm tracking-wide">{{ session('success') }}</span>
-        </div>
-        @endif
-
-        {{-- Flash message error --}}
-        @if($errors->any())
-        <div class="bg-zinc-900/80 border border-red-500/50 text-red-400 px-5 py-4 rounded-xl mb-8 flex items-center gap-3 shadow-lg backdrop-blur-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-            <span class="font-medium text-sm tracking-wide">{{ $errors->first() }}</span>
-        </div>
-        @endif
-
-        <div class="flex flex-col lg:flex-row gap-12 lg:gap-16">
-            
-            <div class="w-full lg:w-1/2 flex flex-col gap-5">
-                <div class="bg-zinc-900/30 rounded-2xl aspect-[4/5] sm:aspect-square flex items-center justify-center overflow-hidden border border-zinc-800/60 shadow-[0_0_40px_rgba(0,0,0,0.3)] relative group p-2">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-blue-900/5 to-transparent pointer-events-none"></div>
-                    
-                    {{-- Pengecekan Cloudinary untuk Gambar Utama --}}
-                    @php
-                        $firstImg = $product->images->first();
-                        if ($firstImg) {
-                            $mainImage = str_starts_with($firstImg->url_gambar, 'http') ? $firstImg->url_gambar : asset('storage/' . $firstImg->url_gambar);
-                        } else {
-                            $mainImage = 'https://dummyimage.com/800x800/27272a/fff&text=No+Image';
-                        }
-                    @endphp
-                    
-                    <img id="main-image" src="{{ $mainImage }}" onerror="this.onerror=null; this.src='https://dummyimage.com/800x800/27272a/fff&text=No+Image';" class="w-full h-full object-cover rounded-xl transition-transform duration-700 group-hover:scale-105">
-                </div>
-                
-                <div class="grid grid-cols-5 gap-3 sm:gap-4">
-                    {{-- Loop Gambar Tambahan --}}
-                    @foreach($product->images as $index => $image)
-                    @php
-                        $imgUrl = str_starts_with($image->url_gambar, 'http') ? $image->url_gambar : asset('storage/' . $image->url_gambar);
-                    @endphp
-                    <button type="button" 
-                            class="thumbnail-btn bg-zinc-900/50 rounded-xl aspect-square border {{ $index === 0 ? 'border-zinc-300 shadow-[0_0_10px_rgba(255,255,255,0.1)]' : 'border-zinc-800/80' }} hover:border-zinc-500 overflow-hidden transition-all p-1" 
-                            data-src="{{ $imgUrl }}">
-                        <img src="{{ $imgUrl }}" 
-                             onerror="this.onerror=null; this.src='https://dummyimage.com/150x150/27272a/fff&text=Broken';" 
-                             class="w-full h-full object-cover rounded-lg">
-                    </button>
-                    @endforeach
-
-                    {{-- Size Chart --}}
-                    @if($product->url_size_chart)
-                    @php
-                        $sizeChartUrl = str_starts_with($product->url_size_chart, 'http') ? $product->url_size_chart : asset('storage/' . $product->url_size_chart);
-                    @endphp
-                    <button type="button" 
-                            class="thumbnail-btn bg-zinc-900/50 rounded-xl aspect-square border border-zinc-800/80 hover:border-zinc-500 overflow-hidden relative transition-all p-1" 
-                            data-src="{{ $sizeChartUrl }}"
-                            title="Size Chart">
-                        <img src="{{ $sizeChartUrl }}" 
-                             onerror="this.onerror=null; this.src='https://dummyimage.com/150x150/27272a/fff&text=Broken';" 
-                             class="w-full h-full object-cover rounded-lg opacity-50 hover:opacity-100 transition-opacity">
-                        <span class="absolute inset-0 flex items-center justify-center text-white font-bold text-xs tracking-widest bg-zinc-950/60 pointer-events-none rounded-lg m-1 backdrop-blur-[2px]">SIZE</span>
-                    </button>
-                    @endif
-                </div>
-            </div>
-
-            <div class="w-full lg:w-1/2 flex flex-col justify-start pt-2">
-                <form id="cart-form" action="{{ route('cart.add', $product->id_product) }}" method="POST">
-                    @csrf
-                    
-                    <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 uppercase tracking-tight drop-shadow-md">{{ $product->nama_product }}</h1>
-                    <p class="text-2xl font-semibold text-zinc-400 mb-10 tracking-wide">Rp {{ number_format($product->harga, 0, ',', '.') }}</p>
-
-                    <div class="mb-8">
-                        <div class="flex justify-between items-end mb-4">
-                            <span class="text-xs font-bold tracking-widest text-zinc-500 uppercase">Select Size</span>
-                        </div>
-                        <div class="flex flex-wrap gap-3">
-                            @forelse($variants as $variant)
-                            <label class="cursor-pointer">
-                                <input type="radio" name="size" value="{{ $variant->nama_size }}" class="peer hidden size-radio">
-                                <span class="inline-flex items-center justify-center min-w-[3.5rem] h-12 px-4 rounded-xl border border-zinc-700 text-zinc-400 bg-zinc-900/50 peer-checked:bg-blue-900/40 peer-checked:text-blue-300 peer-checked:border-blue-500 hover:border-zinc-500 transition-all font-bold text-base shadow-sm">
-                                    {{ $variant->nama_size }}
-                                </span>
-                            </label>
-                            @empty
-                            <span class="text-red-400/80 font-medium text-sm bg-red-900/20 px-4 py-2 rounded-lg border border-red-900/50">Varian ukuran belum tersedia.</span>
-                            @endforelse
-                        </div>
-                        @error('size')
-                        <p class="text-red-400 text-sm mt-3 flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            {{ $message }}
-                        </p>
-                        @enderror
-                    </div>
-
-                    <div class="mb-10 flex flex-wrap items-center gap-6">
-                        <div class="flex items-center border border-zinc-700/80 rounded-xl bg-zinc-900/50 h-12 w-36 shadow-inner overflow-hidden">
-                            <button type="button" id="btn-minus" class="w-1/3 h-full flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors font-bold text-xl">-</button>
-                            <input type="number" id="qty-input" name="quantity" value="1" min="1" max="99" class="w-1/3 h-full text-center bg-transparent text-white font-bold focus:outline-none text-lg" readonly>
-                            <button type="button" id="btn-plus" class="w-1/3 h-full flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors font-bold text-xl">+</button>
-                        </div>
-                        <div class="text-zinc-500 text-sm tracking-wide bg-zinc-900/30 px-4 py-2.5 rounded-lg border border-zinc-800/60">
-                            Available Stock: <span id="stock-display" class="font-bold text-zinc-200 ml-1">{{ $totalStock }}</span>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col gap-4 mb-12 border-b border-zinc-800/60 pb-12">
-                        @auth
-                            <button type="submit" id="btn-add-to-cart" class="w-full bg-white hover:bg-zinc-200 text-zinc-950 font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)] disabled:opacity-60 disabled:cursor-not-allowed">
-                                Add to Cart
-                            </button>
-                        @else
-                            <a href="{{ route('login') }}" class="w-full bg-white hover:bg-zinc-200 text-zinc-950 font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase text-center block shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]">
-                                Add to Cart
-                            </a>
-                        @endauth
-
-                        @auth
-                            <button type="submit" id="btn-buy-now" formaction="{{ route('cart.buyNow', $product->id_product) }}" class="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-500 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase disabled:opacity-60 disabled:cursor-not-allowed">
-                                Buy it now
-                            </button>
-                        @else
-                            <a href="{{ route('login') }}" class="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-500 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase text-center block">
-                                Buy it now
-                            </a>
-                        @endauth
-                    </div>
-
-                    <div>
-                        <h3 class="font-bold text-xs tracking-widest text-zinc-500 uppercase mb-4">Description</h3>
-                        <p class="text-zinc-400 leading-relaxed text-sm md:text-base whitespace-pre-line">{{ $product->deskripsi }}</p>
-                    </div>
-                </form>
-            </div>
-        </div>
     </main>
+@endsection
 
-    <footer class="mt-16 border-t border-zinc-800/60 bg-zinc-950 pt-12 pb-8">
-        <div class="container mx-auto px-4 text-center flex flex-col items-center">
-            <div class="mb-6 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
-                <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-6 w-auto object-contain">
-            </div>
-            <p class="text-zinc-600 text-sm mb-6 max-w-md">
-                Elevating street essentials. Crafted with precision, designed for the culture.
-            </p>
-            <p class="text-zinc-700 text-xs tracking-wider uppercase">&copy; 2026 WearWoreWorn. All rights reserved.</p>
-        </div>
-    </footer>
-
+@push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const btnMinus    = document.getElementById('btn-minus');
-            const btnPlus     = document.getElementById('btn-plus');
-            const qtyInput    = document.getElementById('qty-input');
-            const cartForm    = document.getElementById('cart-form');
-            const btnAddToCart = document.getElementById('btn-add-to-cart');
-            const btnBuyNow   = document.getElementById('btn-buy-now');
-            const stockDisplay = document.getElementById('stock-display');
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('productPage', ({ stock, total, size, images }) => ({
+                stock,
+                size,
+                qty: 1,
+                active: 0,
+                sizeError: false,
 
-            // ================================================================
-            // Data stok dari server
-            // ================================================================
-            const totalStock = {{ $totalStock }};
-            const stockData = {
-                @foreach($variants as $variant)
-                    "{{ $variant->nama_size }}": {{ $variant->stok }},
-                @endforeach
-            };
-
-            // ================================================================
-            // Helpers: aktifkan / nonaktifkan tombol beli berdasarkan stok
-            // ================================================================
-            function setButtonsDisabled(disabled, reason) {
-                [btnAddToCart, btnBuyNow].forEach(btn => {
-                    if (!btn) return;
-                    btn.disabled = disabled;
-                    if (disabled) {
-                        btn.title = reason || 'Tidak tersedia';
-                        btn.classList.add('opacity-50', 'cursor-not-allowed');
-                        btn.classList.remove('hover:bg-zinc-200', 'hover:bg-zinc-800');
-                    } else {
-                        btn.title = '';
-                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                        btn.classList.add('hover:bg-zinc-200');
-                    }
-                });
-            }
-
-            // Cek stok awal
-            if (totalStock <= 0) {
-                setButtonsDisabled(true, 'Stok habis');
-                if (btnAddToCart) btnAddToCart.textContent = 'Stok Habis';
-                if (btnBuyNow) btnBuyNow.textContent = 'Stok Habis';
-            }
-
-            // ================================================================
-            // Qty +/- (batasi sesuai stok ukuran yang dipilih)
-            // ================================================================
-            let currentMaxStock = totalStock;
-
-            btnMinus && btnMinus.addEventListener('click', function() {
-                let val = parseInt(qtyInput.value);
-                if (val > 1) qtyInput.value = val - 1;
-            });
-
-            btnPlus && btnPlus.addEventListener('click', function() {
-                let val = parseInt(qtyInput.value);
-                if (val < Math.max(1, currentMaxStock)) qtyInput.value = val + 1;
-            });
-
-            // ================================================================
-            // Ganti gambar dari thumbnail
-            // ================================================================
-            const thumbnails = document.querySelectorAll('.thumbnail-btn');
-            const mainImage  = document.getElementById('main-image');
-
-            thumbnails.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    mainImage.src = this.getAttribute('data-src');
-                    thumbnails.forEach(t => {
-                        t.classList.remove('border-zinc-300', 'shadow-[0_0_10px_rgba(255,255,255,0.1)]');
-                        t.classList.add('border-zinc-800/80');
+                get available() {
+                    return this.size ? (this.stock[this.size] ?? 0) : total;
+                },
+                get maxQty() {
+                    return Math.max(1, Math.min(99, this.available));
+                },
+                init() {
+                    this.$watch('size', () => {
+                        this.sizeError = false;
+                        this.qty = Math.min(this.qty, this.maxQty);
                     });
-                    this.classList.remove('border-zinc-800/80');
-                    this.classList.add('border-zinc-300', 'shadow-[0_0_10px_rgba(255,255,255,0.1)]');
-                });
-            });
-
-            // ================================================================
-            // Pilihan ukuran
-            // ================================================================
-            const sizeRadios = document.querySelectorAll('.size-radio');
-            let selectedRadio = null;
-
-            sizeRadios.forEach(radio => {
-                radio.addEventListener('click', function() {
-                    // Toggle deselect
-                    if (selectedRadio === this) {
-                        this.checked = false;
-                        selectedRadio = null;
-                        currentMaxStock = totalStock;
-                        stockDisplay.innerText = totalStock;
-
-                        if (totalStock <= 0) {
-                            setButtonsDisabled(true, 'Stok habis');
-                        } else {
-                            setButtonsDisabled(false);
-                            if (btnAddToCart) btnAddToCart.textContent = 'Add to Cart';
-                            if (btnBuyNow)    btnBuyNow.textContent    = 'Buy it now';
-                        }
-                        qtyInput.value = 1;
-                        return;
+                },
+                next() { this.active = (this.active + 1) % images; },
+                prev() { this.active = (this.active - 1 + images) % images; },
+                validate(event) {
+                    if (!this.size) {
+                        event.preventDefault();
+                        this.sizeError = true;
+                        document.getElementById('cart-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
-
-                    selectedRadio = this;
-                    const stok = stockData[this.value] !== undefined ? stockData[this.value] : 0;
-                    currentMaxStock = stok;
-                    stockDisplay.innerText = stok;
-
-                    if (stok <= 0) {
-                        setButtonsDisabled(true, 'Ukuran ini habis');
-                        if (btnAddToCart) btnAddToCart.textContent = 'Stok Habis';
-                        if (btnBuyNow)    btnBuyNow.textContent    = 'Stok Habis';
-                        qtyInput.value = 0;
-                    } else {
-                        setButtonsDisabled(false);
-                        if (btnAddToCart) btnAddToCart.textContent = 'Add to Cart';
-                        if (btnBuyNow)    btnBuyNow.textContent    = 'Buy it now';
-                        if (parseInt(qtyInput.value) > stok) qtyInput.value = stok;
-                        if (parseInt(qtyInput.value) < 1)   qtyInput.value = 1;
-                    }
-                });
-            });
-
-            // ================================================================
-            // Anti Double-Submit
-            // ================================================================
-            let isSubmitting = false;
-            let lastClickedBtn = null;
-
-            [btnAddToCart, btnBuyNow].forEach(btn => {
-                if (btn) {
-                    btn.addEventListener('click', function() {
-                        lastClickedBtn = this;
-                    });
-                }
-            });
-
-            if (cartForm) {
-                cartForm.addEventListener('submit', function(e) {
-                    if (isSubmitting) {
-                        e.preventDefault();
-                        return;
-                    }
-
-                    isSubmitting = true;
-                    const spinnerSvg = '<svg class="animate-spin h-4 w-4 inline-block mr-1.5 align-[-2px]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>';
-
-                    if (lastClickedBtn === btnBuyNow) {
-                        if (btnBuyNow) btnBuyNow.innerHTML = spinnerSvg + 'Processing...';
-                    } else {
-                        if (btnAddToCart) btnAddToCart.innerHTML = spinnerSvg + 'Adding...';
-                    }
-
-                    setTimeout(() => {
-                        if (btnAddToCart) btnAddToCart.disabled = true;
-                        if (btnBuyNow)    btnBuyNow.disabled    = true;
-                    }, 50);
-                });
-            }
-
-            // Auto-hide flash messages
-            const flashMessages = document.querySelectorAll('[class*="border-green-500"], [class*="border-red-500"]');
-            flashMessages.forEach(msg => {
-                setTimeout(() => {
-                    msg.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
-                    msg.style.opacity = '0';
-                    msg.style.transform = 'translateY(-10px)';
-                    setTimeout(() => msg.remove(), 600);
-                }, 5000);
-            });
+                },
+            }));
         });
     </script>
-</body>
-</html>
+@endpush

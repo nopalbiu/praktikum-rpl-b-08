@@ -1,147 +1,121 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pesanan Berhasil - WearWoreWorn</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans selection:bg-blue-900/50 flex flex-col">
-    
-    <nav class="bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/60 p-4 sticky top-0 z-50 shadow-sm">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105">
-                <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
-            </a>
-            
-            <div class="hidden md:flex space-x-12 font-medium text-sm tracking-widest text-zinc-400">
-                <a href="/" class="hover:text-blue-400 transition-colors">CATALOG</a>
-                <a href="{{ route('about') }}" class="hover:text-blue-400 transition-colors">ABOUT US</a>
-            </div>
+@extends('layouts.app')
 
-            <div class="flex items-center space-x-6">
-                <a href="{{ route('user.profile') }}" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-blue-500/50 text-white text-sm font-semibold px-5 py-2 rounded-full transition-all">Account</a>
+@section('title', 'Pesanan dibuat')
+
+@php
+    $total = (int) round($order->total_harga);
+    $totalFormatted = number_format($total, 0, ',', '.');
+    $orderCode = '#TRX-'.str_pad($order->id_order, 4, '0', STR_PAD_LEFT);
+    preg_match('/\d{6,}/', $infoRekening, $m);
+    $accountNumber = $m[0] ?? $infoRekening;
+
+    $waNumber = '6285877539320';
+    $waText = rawurlencode("Halo Admin WearWoreWorn!\n\nSaya mau konfirmasi pembayaran:\n- Pesanan: {$orderCode}\n- Total: Rp {$totalFormatted}\n\nBukti transfer saya lampirkan di pesan ini.");
+    $waLink = "https://wa.me/{$waNumber}?text={$waText}";
+    $isWaiting = $order->status_pesanan === \App\Models\Order::STATUS_MENUNGGU_PEMBAYARAN;
+@endphp
+
+@section('content')
+    <main class="container-page max-w-2xl pt-8 pb-12 sm:pt-12">
+        <x-checkout-steps :current="3" />
+
+        <div class="text-center">
+            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-950/60 text-emerald-400">
+                <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
             </div>
+            <h1 class="mt-5 text-2xl font-bold tracking-tight text-white sm:text-3xl">Pesanan dibuat</h1>
+            <p class="mt-2 text-zinc-400">Selesaikan pembayaran supaya pesanan {{ $orderCode }} bisa kami proses.</p>
         </div>
-    </nav>
 
-    <main class="flex-grow container mx-auto p-4 md:p-8 mt-4 flex items-center justify-center">
-        <div class="relative bg-zinc-900/40 rounded-2xl p-10 border border-zinc-800/80 backdrop-blur-md shadow-[0_0_40px_rgba(30,58,138,0.05)] w-full max-w-xl text-center overflow-hidden group">
-            
-            <div class="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 rounded-full blur-[100px] pointer-events-none"></div>
-            
-            <div class="relative z-10">
-                <div class="flex justify-center mb-6">
-                    <div class="bg-blue-600/10 rounded-full p-4 border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                        </svg>
+        <section class="card mt-8 p-5 sm:p-6" x-data="{ copied: null, copy(text, key) { navigator.clipboard.writeText(text); this.copied = key; setTimeout(() => this.copied = null, 1500) } }">
+            @if ($isWaiting)
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-900/50 bg-amber-950/20 px-4 py-3"
+                     x-data="countdown({{ $batasPembayaran->getTimestamp() * 1000 }})">
+                    <span class="text-sm text-amber-200">Bayar sebelum</span>
+                    <span class="font-mono text-sm font-semibold text-amber-300" x-text="label">{{ $batasPembayaran->translatedFormat('d M Y, H:i') }}</span>
+                </div>
+            @else
+                <div class="flex items-center justify-between rounded-xl border border-zinc-800 px-4 py-3">
+                    <span class="text-sm text-zinc-400">Status</span>
+                    <span class="badge badge-neutral">{{ $order->statusLabel() }}</span>
+                </div>
+            @endif
+
+            <dl class="mt-5 divide-y divide-zinc-800">
+                <div class="flex items-center justify-between gap-4 py-4">
+                    <div>
+                        <dt class="text-xs text-zinc-500">Total transfer</dt>
+                        <dd class="mt-1 text-2xl font-bold text-white">Rp {{ $totalFormatted }}</dd>
                     </div>
+                    <button type="button" class="btn btn-secondary btn-sm" @click="copy('{{ $total }}', 'total')">
+                        <span x-text="copied === 'total' ? 'Disalin' : 'Salin'">Salin</span>
+                    </button>
                 </div>
-
-                <h1 class="text-3xl font-extrabold text-white tracking-tight mb-2">PESANAN BERHASIL!</h1>
-                <p class="text-zinc-400 font-medium mb-6">Terima kasih telah menjadi bagian dari culture WearWoreWorn.</p>
-                
-                <div class="mb-8">
-                    <span class="inline-block bg-zinc-950/80 text-zinc-400 font-mono text-xs px-4 py-2 rounded-lg border border-zinc-800 shadow-inner tracking-widest">
-                        ORDER ID: <strong class="text-blue-400">#{{ $order->id_order }}</strong>
-                    </span>
-                </div>
-
-                <div class="bg-zinc-950/50 rounded-xl p-6 mb-8 border border-zinc-800 shadow-inner">
-                    <p class="text-xs text-zinc-500 uppercase tracking-[0.2em] mb-2 font-bold">Total Transfer</p>
-                    <h2 class="text-4xl font-bold text-white mb-6">Rp {{ number_format($order->total_harga, 0, ',', '.') }}</h2>
-                    
-                    <div class="bg-zinc-900 rounded-lg px-4 py-4 border border-dashed border-zinc-700 flex justify-center items-center">
-                        <span class="text-zinc-300 font-mono tracking-wider text-lg font-bold">
-                            {{ $infoRekening }}
-                        </span>
+                <div class="flex items-center justify-between gap-4 py-4">
+                    <div class="min-w-0">
+                        <dt class="text-xs text-zinc-500">Rekening tujuan</dt>
+                        <dd class="mt-1 font-mono text-base break-words text-white">{{ $infoRekening }}</dd>
                     </div>
+                    <button type="button" class="btn btn-secondary btn-sm shrink-0" @click="copy('{{ $accountNumber }}', 'rek')">
+                        <span x-text="copied === 'rek' ? 'Disalin' : 'Salin'">Salin</span>
+                    </button>
                 </div>
+            </dl>
 
-                <div class="mb-8">
-                    <div class="inline-flex items-center space-x-2 bg-blue-900/20 text-blue-300 text-[10px] font-bold px-3 py-1 rounded-full border border-blue-500/30 uppercase tracking-widest mb-4">
-                        <span class="relative flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                        </span>
-                        <span>Menunggu Pembayaran</span>
-                    </div>
-                    
-                    <p class="text-zinc-500 text-xs mb-1">Batas waktu pembayaran:</p>
-                    <strong id="countdown-timer" class="text-xl font-bold text-blue-400 tracking-tight">Menghitung...</strong>
-                </div>
+            <ol class="mt-2 space-y-3 rounded-xl bg-zinc-900/60 p-4 text-sm text-zinc-400">
+                <li class="flex gap-3"><span class="font-semibold text-white">1</span> Transfer tepat Rp {{ $totalFormatted }} ke rekening di atas.</li>
+                <li class="flex gap-3"><span class="font-semibold text-white">2</span> Simpan atau screenshot bukti transfer.</li>
+                <li class="flex gap-3"><span class="font-semibold text-white">3</span> Kirim bukti lewat WhatsApp dengan tombol di bawah.</li>
+            </ol>
 
-                <div class="bg-zinc-900/60 rounded-xl p-6 mb-8 text-left border border-zinc-800/80">
-                    <h3 class="text-zinc-200 font-bold mb-4 uppercase tracking-widest text-[10px]">Langkah Selanjutnya:</h3>
-                    <ul class="space-y-3 text-sm font-medium">
-                        <li class="flex items-start gap-3">
-                            <span class="text-blue-500 font-bold">01</span>
-                            <span class="text-zinc-400">Transfer tepat <strong class="text-zinc-100 font-bold">Rp {{ number_format($order->total_harga, 0, ',', '.') }}</strong></span>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <span class="text-blue-500 font-bold">02</span>
-                            <span class="text-zinc-400">Capture bukti transfer Anda.</span>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <span class="text-blue-500 font-bold">03</span>
-                            <span class="text-zinc-400">Klik tombol di bawah untuk konfirmasi WhatsApp.</span>
-                        </li>
-                    </ul>
-                </div>
-
-                @php
-                    $waNumber = "6285877539320"; 
-                    $orderId = $order->id_order;
-                    $totalFormatted = number_format($order->total_harga, 0, ',', '.');
-                    $waText = "Hi Admin WearWoreWorn!%0A%0ABerikut adalah konfirmasi pembayaran untuk pesanan saya:%0A- Order ID: " . $orderId . " %0A- Total: Rp " . $totalFormatted . " %0ABukti transfer sudah saya lampirkan bersama pesan ini.";
-                    $waLink = "https://wa.me/{$waNumber}?text={$waText}";
-                @endphp
-
-                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                    <a href="{{ $waLink }}" target="_blank" class="w-full sm:w-auto px-8 py-4 bg-white hover:bg-zinc-200 text-zinc-950 font-bold rounded-full transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] flex items-center justify-center gap-2 text-sm uppercase tracking-widest">
-                        Konfirmasi WA
-                    </a>
-                    
-                    <a href="{{ route('home') }}" class="w-full sm:w-auto px-8 py-4 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-full border border-zinc-700 transition-all text-sm uppercase tracking-widest text-center">
-                        Beranda
-                    </a>
-                </div>
+            <div class="mt-6 grid gap-2 sm:grid-cols-2">
+                <a href="{{ $waLink }}" target="_blank" rel="noopener" class="btn btn-primary btn-lg">Konfirmasi via WhatsApp</a>
+                <a href="{{ route('user.profile') }}#pesanan" class="btn btn-secondary btn-lg">Lihat pesanan saya</a>
             </div>
-        </div>
+        </section>
+
+        <section class="card mt-6 p-5 sm:p-6">
+            <h2 class="text-base font-semibold text-white">Detail pesanan</h2>
+            <ul class="mt-4 space-y-3 text-sm">
+                @foreach ($order->items as $item)
+                    <li class="flex justify-between gap-4">
+                        <span class="text-zinc-300">{{ $item->variant->product->nama_product ?? 'Produk' }} <span class="text-zinc-500">× {{ $item->qty }}</span></span>
+                        <span class="whitespace-nowrap text-zinc-200">Rp {{ number_format($item->harga_satuan * $item->qty, 0, ',', '.') }}</span>
+                    </li>
+                @endforeach
+            </ul>
+            <p class="mt-4 border-t border-zinc-800 pt-4 text-sm text-zinc-500">Dikirim dengan {{ $order->kurir }} ke:</p>
+            <p class="mt-1 text-sm whitespace-pre-line text-zinc-300">{{ $order->alamat_pengiriman }}</p>
+        </section>
+
+        <p class="mt-8 text-center">
+            <a href="{{ route('home') }}" class="text-sm text-zinc-400 hover:text-white">Lanjut belanja</a>
+        </p>
     </main>
+@endsection
 
-    <footer class="mt-16 border-t border-zinc-800/60 bg-zinc-950 pt-12 pb-8">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-zinc-700 text-xs tracking-wider uppercase">&copy; 2026 WearWoreWorn. All rights reserved.</p>
-        </div>
-    </footer>
-
+@push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const deadline = {{ $batasPembayaran->getTimestamp() * 1000 }};
-            const timerElement = document.getElementById('countdown-timer');
-
-            const x = setInterval(function() {
-                const now = new Date().getTime();
-                const distance = deadline - now;
-
-                if (distance < 0) {
-                    clearInterval(x);
-                    timerElement.innerHTML = "WAKTU HABIS";
-                    timerElement.classList.replace('text-blue-400', 'text-zinc-600');
-                    return;
-                }
-
-                const hours = Math.floor(distance / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                timerElement.innerHTML = hours.toString().padStart(2, '0') + "h " + 
-                                       minutes.toString().padStart(2, '0') + "m " + 
-                                       seconds.toString().padStart(2, '0') + "s";
-            }, 1000);
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('countdown', (deadline) => ({
+                label: '',
+                init() {
+                    const tick = () => {
+                        const left = deadline - Date.now();
+                        if (left <= 0) {
+                            this.label = 'Waktu habis';
+                            return clearInterval(this.timer);
+                        }
+                        const h = Math.floor(left / 3.6e6);
+                        const m = Math.floor((left % 3.6e6) / 6e4);
+                        const s = Math.floor((left % 6e4) / 1000);
+                        this.label = `${h} jam ${String(m).padStart(2, '0')} mnt ${String(s).padStart(2, '0')} dtk`;
+                    };
+                    tick();
+                    this.timer = setInterval(tick, 1000);
+                },
+                destroy() { clearInterval(this.timer); },
+            }));
         });
     </script>
-</body>
-</html>
+@endpush

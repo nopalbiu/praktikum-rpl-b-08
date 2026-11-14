@@ -1,7 +1,5 @@
 @import 'tailwindcss';
 
-@import 'tw-animate-css';
-
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
@@ -139,5 +137,207 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+/*
+ * ------------------------------------------------------------------
+ * WearWoreWorn UI — "Dark refined"
+ * Netral: zinc. Aksen: biru (link, fokus, harga). CTA utama: putih.
+ * Pakai kelas di bawah ini di view supaya tampilan konsisten.
+ * ------------------------------------------------------------------
+ */
+@layer base {
+    html {
+        scroll-behavior: smooth;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        @apply bg-zinc-950 text-zinc-100 antialiased;
+    }
+
+    ::selection {
+        @apply bg-blue-500/30 text-white;
+    }
+
+    :focus-visible {
+        @apply outline-2 outline-offset-2 outline-blue-500;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@layer components {
+    .container-page {
+        @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+    }
+
+    /* Tombol */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors duration-150 select-none disabled:cursor-not-allowed disabled:opacity-50;
+    }
+    .btn-sm {
+        @apply px-3 py-1.5 text-xs;
+    }
+    .btn-lg {
+        @apply px-6 py-3.5 text-base;
+    }
+    .btn-primary {
+        @apply bg-white text-zinc-950 hover:bg-zinc-200;
+    }
+    .btn-accent {
+        @apply bg-blue-600 text-white hover:bg-blue-500;
+    }
+    .btn-secondary {
+        @apply border border-zinc-700 bg-zinc-900 text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800;
+    }
+    .btn-ghost {
+        @apply text-zinc-400 hover:bg-zinc-800/60 hover:text-white;
+    }
+    .btn-danger {
+        @apply border border-red-900/60 bg-red-950/40 text-red-300 hover:bg-red-900/50;
+    }
+
+    /* Form */
+    .label {
+        @apply mb-1.5 block text-sm font-medium text-zinc-300;
+    }
+    .input {
+        @apply block w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none;
+    }
+    .input-error {
+        @apply border-red-500/70 focus:border-red-500 focus:ring-red-500;
+    }
+    .field-error {
+        @apply mt-1.5 text-xs text-red-400;
+    }
+
+    /* Permukaan */
+    .card {
+        @apply rounded-2xl border border-zinc-800/80 bg-zinc-900/40;
+    }
+
+    /* Badge status */
+    .badge {
+        @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap;
+    }
+    .badge-neutral {
+        @apply border-zinc-700 bg-zinc-800/60 text-zinc-300;
+    }
+    .badge-warning {
+        @apply border-amber-900/60 bg-amber-950/40 text-amber-300;
+    }
+    .badge-info {
+        @apply border-blue-900/60 bg-blue-950/40 text-blue-300;
+    }
+    .badge-purple {
+        @apply border-purple-900/60 bg-purple-950/40 text-purple-300;
+    }
+    .badge-success {
+        @apply border-emerald-900/60 bg-emerald-950/40 text-emerald-300;
+    }
+    .badge-danger {
+        @apply border-red-900/60 bg-red-950/40 text-red-300;
+    }
+
+    /* Navigasi */
+    .nav-link {
+        @apply rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:text-white;
+    }
+    .nav-link-active {
+        @apply text-white;
+    }
+}
+
+/* ------------------------------------------------------------------
+ * Splash logo (sekali per sesi) — lihat components/splash.blade.php
+ * ------------------------------------------------------------------ */
+#splash {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    background: var(--color-zinc-950);
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+    /* Pengaman: tetap hilang sendiri walau JavaScript gagal */
+    animation: splash-failsafe 0.3s ease 3.5s forwards;
+}
+.no-splash #splash {
+    display: none;
+}
+#splash.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+#splash .splash-logo {
+    width: 7.5rem;
+    height: auto;
+    animation: splash-logo-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+#splash .splash-bar {
+    position: relative;
+    width: 4.5rem;
+    height: 2px;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: var(--color-zinc-800);
+}
+#splash .splash-bar > span {
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    border-radius: inherit;
+    background: var(--color-white);
+    animation: splash-bar 0.9s ease-in-out infinite;
+}
+
+@keyframes splash-logo-in {
+    from { opacity: 0; transform: translateY(6px) scale(0.96); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes splash-bar {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(250%); }
+}
+@keyframes splash-failsafe {
+    to { opacity: 0; visibility: hidden; }
+}
+
+/* ------------------------------------------------------------------
+ * Progress bar navigasi di atas layar — dikendalikan resources/js/app.js
+ * ------------------------------------------------------------------ */
+#page-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 90;
+    height: 2px;
+    width: 0;
+    opacity: 0;
+    background: var(--color-blue-500);
+    box-shadow: 0 0 8px var(--color-blue-500);
+    pointer-events: none;
+    transition: width 0.3s ease, opacity 0.3s ease;
+}
+#page-progress.is-active {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #splash .splash-logo,
+    #splash .splash-bar > span,
+    #page-progress {
+        animation: none;
+        transition: none;
+    }
+    #splash .splash-bar {
+        display: none;
     }
 }

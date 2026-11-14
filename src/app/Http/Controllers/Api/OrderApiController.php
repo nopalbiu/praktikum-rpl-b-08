@@ -3,194 +3,95 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
-use App\Models\OrderItem;
+use App\Exceptions\InsufficientStockException;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Order;
+use App\Models\ProductVariant;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-
-use App\Models\ProductVariant;
 
 class OrderApiController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, OrderService $orderService)
     {
-        $request->validate([
-            'nama_penerima' => 'required|string',
-            'alamat_pengiriman' => 'required|string',
-            'no_hp' => 'required|string',
-            'kurir' => 'required|string',
-            'metode_pembayaran' => 'required|string',
-        ]);
+        $request->validate($this->checkoutRules());
 
         $user = Auth::user();
         $cart = Cart::where('id_user', $user->id_user)->first();
+        $items = $cart ? $cart->items()->get() : collect();
 
-        if (!$cart || $cart->items()->count() == 0) {
+        if ($items->isEmpty()) {
             return response()->json(['message' => 'Cart is empty'], 400);
         }
 
-        return DB::transaction(function () use ($request, $user, $cart) {
-            $totalHarga = 0;
-            $items = $cart->items;
+        $lines = [];
+        foreach ($items as $item) {
+            $lines[$item->id_variant] = ($lines[$item->id_variant] ?? 0) + $item->qty;
+        }
 
-            foreach ($items as $item) {
-                $totalHarga += $item->getSubtotal();
-            }
-
-            $alamatLengkap = "Nama: " . $request->nama_penerima . "\n" .
-                             "No. HP: " . $request->no_hp . "\n" .
-                             "Alamat: " . $request->alamat_pengiriman;
-
-            if (!empty($request->catatan) && $request->catatan !== '-') {
-                $alamatLengkap .= "\nCatatan: " . $request->catatan;
-            }
-
-            $ongkir = 0;
-            if ($request->kurir == 'JNE') $ongkir = 15000;
-            elseif ($request->kurir == 'J&T') $ongkir = 13000;
-            elseif ($request->kurir == 'SiCepat') $ongkir = 12000;
-
-            $admin = 0;
-            if ($request->kurir == 'JNE') $admin = 3000;
-            elseif ($request->kurir == 'J&T') $admin = 2500;
-            elseif ($request->kurir == 'SiCepat') $admin = 2000;
-
-            $grandTotal = $totalHarga + $ongkir + $admin;
-
-            $order = Order::create([
-                'id_user' => $user->id_user,
-                'alamat_pengiriman' => $alamatLengkap,
-                'kurir' => $request->kurir,
-                'total_harga' => $grandTotal,
-                'status_pesanan' => 'pending',
-                'tanggal_order' => now(),
-            ]);
-
-            foreach ($items as $item) {
-                OrderItem::create([
-                    'id_order' => $order->id_order,
-                    'id_variant' => $item->id_variant,
-                    'qty' => $item->qty,
-                    'harga_satuan' => $item->variant->product->harga,
-                ]);
-
-                // Potong stok
-                $variant = $item->variant;
-                $variant->stok -= $item->qty;
-                $variant->save();
-            }
-
-            \App\Models\Payment::create([
-                'id_order' => $order->id_order,
-                'metode_pembayaran' => $request->metode_pembayaran,
-                'status_pembayaran' => 'belum_bayar',
-                'jumlah_bayar' => $grandTotal,
-                'waktu_transaksi' => now(),
-            ]);
-
-            CartItem::where('id_cart', $cart->id_cart)->delete();
-
-            return response()->json([
-                'message' => 'Order created successfully',
-                'order' => [
-                    'id_order' => $order->id_order,
-                    'total_harga' => (float)$order->total_harga,
-                    'status' => $order->status_pesanan,
-                    'created_at' => $order->created_at,
-                    'metode_pembayaran' => $request->metode_pembayaran,
-                ]
-            ], 201);
+        return $this->placeOrder($orderService, $request, $lines, function () use ($cart, $items) {
+            CartItem::where('id_cart', $cart->id_cart)
+                ->whereIn('id_cart_item', $items->pluck('id_cart_item'))
+                ->delete();
         });
     }
 
-    public function directBuy(Request $request)
+    public function directBuy(Request $request, OrderService $orderService)
     {
-        $request->validate([
-            'nama_penerima' => 'required|string',
-            'alamat_pengiriman' => 'required|string',
-            'no_hp' => 'required|string',
-            'kurir' => 'required|string',
-            'metode_pembayaran' => 'required|string',
+        $request->validate($this->checkoutRules() + [
             'id_variant' => 'required|integer',
-            'qty' => 'required|integer|min:1',
+            'qty'        => 'required|integer|min:1',
         ]);
 
-        $user = Auth::user();
         $variant = ProductVariant::with('product')->find($request->id_variant);
 
-        if (!$variant || !$variant->product) {
+        if (! $variant || ! $variant->product || ! $variant->is_active) {
             return response()->json(['message' => 'Variant not found'], 404);
         }
 
-        if ($variant->stok < $request->qty) {
-            return response()->json(['message' => 'Stok tidak mencukupi'], 400);
+        return $this->placeOrder($orderService, $request, [$variant->id_variant => (int) $request->qty]);
+    }
+
+    private function checkoutRules(): array
+    {
+        return [
+            'nama_penerima'     => 'required|string',
+            'alamat_pengiriman' => 'required|string',
+            'no_hp'             => 'required|string',
+            'kurir'             => 'required|string|in:' . implode(',', array_keys(OrderService::COURIER_OPTIONS)),
+            'metode_pembayaran' => 'required|string',
+        ];
+    }
+
+    private function placeOrder(OrderService $orderService, Request $request, array $lines, ?callable $insideTransaction = null)
+    {
+        try {
+            $order = $orderService->placeOrder(Auth::user(), $lines, [
+                'alamat_pengiriman' => OrderService::formatAlamat(
+                    $request->nama_penerima,
+                    $request->no_hp,
+                    $request->alamat_pengiriman,
+                    $request->catatan,
+                ),
+                'kurir'             => $request->kurir,
+                'metode_pembayaran' => $request->metode_pembayaran,
+            ], $insideTransaction);
+        } catch (InsufficientStockException $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
         }
 
-        return DB::transaction(function () use ($request, $user, $variant) {
-            $hargaSatuan = $variant->product->harga;
-            $totalHarga = $hargaSatuan * $request->qty;
-
-            $alamatLengkap = "Nama: " . $request->nama_penerima . "\n" .
-                             "No. HP: " . $request->no_hp . "\n" .
-                             "Alamat: " . $request->alamat_pengiriman;
-
-            if (!empty($request->catatan) && $request->catatan !== '-') {
-                $alamatLengkap .= "\nCatatan: " . $request->catatan;
-            }
-
-            $ongkir = 0;
-            if ($request->kurir == 'JNE') $ongkir = 15000;
-            elseif ($request->kurir == 'J&T') $ongkir = 13000;
-            elseif ($request->kurir == 'SiCepat') $ongkir = 12000;
-
-            $admin = 0;
-            if ($request->kurir == 'JNE') $admin = 3000;
-            elseif ($request->kurir == 'J&T') $admin = 2500;
-            elseif ($request->kurir == 'SiCepat') $admin = 2000;
-
-            $grandTotal = $totalHarga + $ongkir + $admin;
-
-            $order = Order::create([
-                'id_user' => $user->id_user,
-                'alamat_pengiriman' => $alamatLengkap,
-                'kurir' => $request->kurir,
-                'total_harga' => $grandTotal,
-                'status_pesanan' => 'pending',
-                'tanggal_order' => now(),
-            ]);
-
-            OrderItem::create([
-                'id_order' => $order->id_order,
-                'id_variant' => $variant->id_variant,
-                'qty' => $request->qty,
-                'harga_satuan' => $hargaSatuan,
-            ]);
-
-            $variant->stok -= $request->qty;
-            $variant->save();
-
-            \App\Models\Payment::create([
-                'id_order' => $order->id_order,
+        return response()->json([
+            'message' => 'Order created successfully',
+            'order' => [
+                'id_order'          => $order->id_order,
+                'total_harga'       => (float) $order->total_harga,
+                'status'            => $order->status_pesanan,
+                'created_at'        => $order->created_at,
                 'metode_pembayaran' => $request->metode_pembayaran,
-                'status_pembayaran' => 'belum_bayar',
-                'jumlah_bayar' => $grandTotal,
-                'waktu_transaksi' => now(),
-            ]);
-
-            return response()->json([
-                'message' => 'Order created successfully',
-                'order' => [
-                    'id_order' => $order->id_order,
-                    'total_harga' => (float)$order->total_harga,
-                    'status' => $order->status_pesanan,
-                    'created_at' => $order->created_at,
-                    'metode_pembayaran' => $request->metode_pembayaran,
-                ]
-            ], 201);
-        });
+            ],
+        ], 201);
     }
 
     public function index()

@@ -1,196 +1,126 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Pesanan - Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased selection:bg-blue-950 selection:text-blue-200">
+@extends('layouts.admin')
 
-    <nav class="bg-zinc-900/60 backdrop-blur-md border-b border-zinc-800/80 px-6 py-4 grid grid-cols-3 items-center sticky top-0 z-40">
-        
-        <div class="flex items-center gap-6 justify-start">
-            <a href="/" class="flex items-center transition-transform duration-300 hover:scale-105 relative z-10">
-                <img src="{{ asset('images/logo-www.png') }}" alt="WearWoreWorn Logo" class="h-8 w-auto object-contain">
-            </a>
-            <span class="text-blue-400 text-xs font-bold uppercase tracking-[0.2em] bg-blue-950/40 px-2.5 py-1 rounded border border-blue-900/30">Admin Panel</span>
-        </div>
-        
-        <div class="flex justify-center gap-2 w-full">
-            <a href="{{ route('admin.product.index') }}" class="text-zinc-400 hover:text-white hover:bg-zinc-800/60 font-bold px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all">PRODUCT</a>    
-            <a href="{{ route('admin.orders.index') }}" class="bg-white text-zinc-950 font-black px-6 py-2 rounded-lg text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">ORDERS</a>
-        </div>
-        
-        <div class="flex justify-end">
-            <form method="POST" action="{{ route('logout') }}" class="m-0 p-0">
-                @csrf
-                <button type="submit" class="bg-transparent border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white font-bold px-4 py-2 text-xs tracking-wider rounded-lg transition-all uppercase">LOG OUT</button>
+@section('title', 'Pesanan')
+
+@php
+    $currentStatus = request('status', '');
+    $allCount = $statusCounts->sum();
+    $tabUrl = fn ($status) => route('admin.orders.index', array_filter([
+        'status' => $status ?: null,
+        'q' => request('q'),
+        'sort_id' => request('sort_id'),
+    ]));
+@endphp
+
+@section('content')
+    <main class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <x-page-header title="Pesanan" :subtitle="$allCount.' pesanan masuk'">
+            <form method="GET" action="{{ route('admin.orders.index') }}" class="flex w-full flex-wrap gap-2 sm:w-auto" role="search">
+                @if ($currentStatus) <input type="hidden" name="status" value="{{ $currentStatus }}"> @endif
+                <div class="relative flex-1 sm:w-64 sm:flex-none">
+                    <label for="cari-pesanan" class="sr-only">Cari pesanan</label>
+                    <svg class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.2-5.2m0 0A7.5 7.5 0 105.2 5.2a7.5 7.5 0 0010.6 10.6z"/></svg>
+                    <input type="search" id="cari-pesanan" name="q" value="{{ request('q') }}" placeholder="No. pesanan atau nama" class="input py-2 pl-9">
+                </div>
+                <label for="sort_id" class="sr-only">Urutkan</label>
+                <select name="sort_id" id="sort_id" onchange="this.form.submit()" class="input w-auto py-2">
+                    <option value="desc" @selected(request('sort_id', 'desc') === 'desc')>Terbaru</option>
+                    <option value="asc" @selected(request('sort_id') === 'asc')>Terlama</option>
+                </select>
             </form>
-        </div>
+        </x-page-header>
 
-    </nav>
+        {{-- Tab status --}}
+        <nav class="-mx-4 mb-6 overflow-x-auto px-4 sm:mx-0 sm:px-0" aria-label="Filter status">
+            <ul class="flex w-max gap-2">
+                <li>
+                    <a href="{{ $tabUrl(null) }}" class="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm transition-colors {{ $currentStatus === '' ? 'border-white bg-white text-zinc-950' : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white' }}">
+                        Semua <span class="text-xs opacity-70">{{ $allCount }}</span>
+                    </a>
+                </li>
+                @foreach ($statusLabels as $value => $label)
+                    <li>
+                        <a href="{{ $tabUrl($value) }}" class="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm whitespace-nowrap transition-colors {{ $currentStatus === $value ? 'border-white bg-white text-zinc-950' : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white' }}">
+                            {{ $label }} <span class="text-xs opacity-70">{{ $statusCounts[$value] ?? 0 }}</span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </nav>
 
-    <div class="container mx-auto p-6 mt-4">
-        <h2 class="text-2xl font-black text-white uppercase tracking-tight mb-6">Daftar Pesanan</h2>
-
-        @if(session('success'))
-            <div class="bg-emerald-950/30 border border-emerald-900 text-emerald-400 p-4 rounded mb-6 text-sm font-medium shadow-inner flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                {{ session('success') }}
-            </div>
-        @endif
-
-        <form method="GET" action="{{ route('admin.orders.index') }}" class="bg-zinc-900/30 backdrop-blur-md border border-zinc-800/80 p-4 rounded-lg shadow mb-6 flex flex-wrap gap-4 items-end shadow-2xl">
-            <div>
-                <label for="sort_id" class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1">Urutkan ID Transaksi</label>
-                <select name="sort_id" id="sort_id" onchange="this.form.submit()" class="bg-zinc-950/60 text-white border border-zinc-800/80 p-2 rounded focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all cursor-pointer text-sm">
-                    <option value="desc" {{ request('sort_id') == 'desc' ? 'selected' : '' }}>Terbaru (Terbesar)</option>
-                    <option value="asc" {{ request('sort_id') == 'asc' ? 'selected' : '' }}>Terlama (Terkecil)</option>
-                </select>
-            </div>
-
-            <div>
-                <label for="status" class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1">Filter Status</label>
-                <select name="status" id="status" onchange="this.form.submit()" class="bg-zinc-950/60 text-white border border-zinc-800/80 p-2 rounded focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all cursor-pointer text-sm">
-                    <option value="">Semua Status</option>
-                    <option value="menunggu pembayaran" {{ request('status') == 'menunggu pembayaran' ? 'selected' : '' }}>Menunggu Pembayaran</option>
-                    <option value="sudah dibayar" {{ request('status') == 'sudah dibayar' ? 'selected' : '' }}>Sudah Dibayar</option>
-                    <option value="dalam perjalanan" {{ request('status') == 'dalam perjalanan' ? 'selected' : '' }}>Dalam Perjalanan</option>
-                    <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                </select>
-            </div>
-
-            <div class="flex gap-2">
-                <a href="{{ route('admin.orders.index') }}" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/60 text-zinc-300 px-4 py-2 rounded flex items-center text-sm font-bold tracking-wider uppercase transition-colors">
-                    Reset Filter
-                </a>
-            </div>
-        </form>
-
-        <div class="bg-zinc-900/20 rounded-lg shadow border border-zinc-800/60 overflow-x-auto shadow-2xl">
-            <table class="w-full text-left border-collapse text-sm">
-                <thead class="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 text-xs font-bold tracking-widest uppercase">
-                    <tr>
-                        <th class="p-3 border-b border-zinc-800 whitespace-nowrap">ID Transaksi</th>
-                        <th class="p-3 border-b border-zinc-800">Nama Akun</th>
-                        <th class="p-3 border-b border-zinc-800">Nama Customer</th>
-                        <th class="p-3 border-b border-zinc-800">No Handphone</th>
-                        <th class="p-3 border-b border-zinc-800">Detail Item</th>
-                        <th class="p-3 border-b border-zinc-800">Detail Pengiriman</th>
-                        <th class="p-3 border-b border-zinc-800">Total Harga</th> 
-                        <th class="p-3 border-b border-zinc-800">Status</th>
-                        <th class="p-3 border-b border-zinc-800">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-800/40 text-zinc-300">
-                    @forelse($orders as $order)
-                    
+        @if ($orders->isEmpty())
+            <x-empty-state title="Tidak ada pesanan" icon="receipt">
+                {{ request('q') || $currentStatus ? 'Tidak ada pesanan yang cocok dengan filter ini.' : 'Pesanan dari pembeli akan muncul di sini.' }}
+                @if (request('q') || $currentStatus)
+                    <x-slot:action>
+                        <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary">Hapus filter</a>
+                    </x-slot:action>
+                @endif
+            </x-empty-state>
+        @else
+            <ul class="space-y-4">
+                @foreach ($orders as $order)
                     @php
-                        $rawAlamat = $order->alamat_pengiriman;
-                        $parsedNama = '-';
-                        $parsedHp = '-';
-                        $parsedAlamat = $rawAlamat;
-
-                        if(preg_match('/Nama:\s*(.*?)\s*No\. HP:\s*(.*?)\s*Alamat:\s*(.*)/i', $rawAlamat, $matches)) {
-                            $parsedNama = $matches[1];
-                            $parsedHp = $matches[2];
-                            $parsedAlamat = $matches[3];
-                        }
-
-                        $statusBersih = strtolower(str_replace('_', ' ', $order->status_pesanan));
+                        $code = '#TRX-'.str_pad($order->id_order, 4, '0', STR_PAD_LEFT);
+                        $address = preg_match('/Nama:\s*(.*?)\s*No\. HP:\s*(.*?)\s*Alamat:\s*(.*)/is', $order->alamat_pengiriman, $m)
+                            ? ['nama' => $m[1], 'hp' => $m[2], 'alamat' => $m[3]]
+                            : ['nama' => '-', 'hp' => '-', 'alamat' => $order->alamat_pengiriman];
                     @endphp
+                    <li class="card overflow-hidden">
+                        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-5 py-3">
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                                <span class="font-mono font-medium text-white">{{ $code }}</span>
+                                <span class="text-zinc-500">{{ $order->tanggal_order?->translatedFormat('d M Y, H:i') }}</span>
+                                <span class="text-zinc-500">· Akun: <span class="text-zinc-300">{{ $order->user->nama ?? 'Akun terhapus' }}</span></span>
+                            </div>
+                            <x-status-badge :order="$order" />
+                        </div>
 
-                    <tr class="border-b border-zinc-800/30 bg-zinc-900/10 hover:bg-zinc-900/50 transition-all">
-                        <td class="p-3 font-mono text-xs text-zinc-500">#TRX-{{ str_pad($order->id_order, 4, '0', STR_PAD_LEFT) }}</td>
-                        <td class="p-3 font-semibold text-zinc-200">{{ $order->user->nama ?? 'Akun Terhapus' }}</td>
-                        <td class="p-3 text-zinc-300">{{ $parsedNama }}</td>
-                        <td class="p-3 font-mono text-xs text-zinc-400">{{ $parsedHp }}</td>
-                        <td class="p-3 text-xs">
-                            <ul class="list-disc pl-4 space-y-1 text-zinc-400">
-                            @foreach($order->items as $item)
-                                <li><span class="text-white font-medium">{{ $item->variant->product->nama_product ?? 'Terhapus' }}</span> ({{ $item->variant->size->nama_size ?? '-' }}) - <span class="font-mono text-zinc-300">{{ $item->qty }} pcs</span></li>
-                            @endforeach
-                            </ul>
-                        </td>
-                        <td class="p-3 text-xs">
-                            <div class="text-zinc-300 leading-relaxed">{{ $parsedAlamat }}</div>
-                            <div class="text-[10px] font-bold tracking-wider text-blue-400 uppercase mt-2 bg-blue-950/40 border border-blue-900/40 px-2 py-0.5 rounded w-max">Kurir: {{ strtoupper($order->kurir ?? '-') }}</div>
-                        </td>
-                        <td class="p-3 whitespace-nowrap font-mono font-bold text-zinc-100">
-                            Rp {{ number_format($order->total_harga, 0, ',', '.') }}
-                        </td>
-                        <td class="p-3">
-                            <span class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-md border inline-block text-center w-full whitespace-nowrap
-                                {{ $statusBersih == 'menunggu pembayaran' ? 'bg-amber-950/40 text-amber-400 border-amber-900/50' : '' }}
-                                {{ $statusBersih == 'sudah dibayar' ? 'bg-blue-950/40 text-blue-400 border-blue-900/50' : '' }}
-                                {{ $statusBersih == 'dalam perjalanan' ? 'bg-purple-950/40 text-purple-400 border-purple-900/50' : '' }}
-                                {{ $statusBersih == 'selesai' ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/50' : '' }}
-                            ">
-                                {{ $statusBersih }}
-                            </span>
-                        </td>
-                        <td class="p-3">
-                            <button onclick="openModal('{{ $order->id_order }}', '{{ $statusBersih }}')" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-bold px-3 py-1.5 rounded whitespace-nowrap text-xs tracking-wider uppercase transition-all">
-                                Update
-                            </button>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="9" class="p-12 text-center font-medium text-zinc-500 tracking-wide bg-zinc-900/5">Tidak ada data pesanan yang ditemukan.</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                        <div class="grid gap-5 px-5 py-4 md:grid-cols-[1.2fr_1fr_auto]">
+                            <div>
+                                <h3 class="text-xs font-medium text-zinc-500">Barang</h3>
+                                <ul class="mt-2 space-y-1 text-sm">
+                                    @foreach ($order->items as $item)
+                                        <li class="text-zinc-300">
+                                            {{ $item->variant?->product?->nama_product ?? 'Produk terhapus' }}
+                                            <span class="text-zinc-500">· {{ $item->variant?->size?->nama_size ?? '-' }} × {{ $item->qty }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
 
-        <div class="mt-6 text-zinc-400">
-            {{ $orders->links() }}
-        </div>
-    </div>
+                            <div>
+                                <h3 class="text-xs font-medium text-zinc-500">Kirim ke</h3>
+                                <p class="mt-2 text-sm text-zinc-200">{{ $address['nama'] }} · <a href="tel:{{ $address['hp'] }}" class="font-mono text-zinc-300 hover:text-white">{{ $address['hp'] }}</a></p>
+                                <p class="mt-0.5 text-sm whitespace-pre-line text-zinc-400">{{ $address['alamat'] }}</p>
+                                <p class="mt-2 text-xs text-zinc-500">{{ $order->kurir }}{{ $order->payment ? ' · '.$order->payment->metode_pembayaran : '' }}</p>
+                            </div>
 
-    <div id="statusModal" class="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50">
-        <div class="bg-zinc-900 border border-zinc-800 w-full max-w-sm rounded-2xl p-6 shadow-2xl">
-            <h3 class="text-lg font-black text-white mb-4 uppercase tracking-tight border-b border-zinc-800 pb-2">Update Status Pesanan</h3>
-            
-            <form id="updateStatusForm" method="POST" action="">
-                @csrf
-                @method('PUT')
-                
-                <div class="mb-5">
-                    <label for="statusSelectModal" class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Pilih Status Baru</label>
-                    <select name="status_pesanan" id="statusSelectModal" class="w-full bg-zinc-950/60 text-white border border-zinc-800/80 p-2.5 rounded focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 text-sm cursor-pointer outline-none transition-all" required>
-                        <option value="menunggu pembayaran">Menunggu Pembayaran</option>
-                        <option value="sudah dibayar">Sudah Dibayar</option>
-                        <option value="dalam perjalanan">Dalam Perjalanan</option>
-                        <option value="selesai">Selesai</option>
-                    </select>
-                </div>
-                
-                <div class="flex justify-end gap-2 border-t border-zinc-800/60 pt-4">
-                    <button type="button" onclick="closeModal()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold px-4 py-2 rounded text-sm uppercase tracking-wider transition-all">
-                        Batal
-                    </button>
-                    <button type="submit" class="bg-white hover:bg-zinc-200 text-zinc-950 font-black px-4 py-2 rounded text-sm uppercase tracking-wider transition-all shadow-lg">
-                        Simpan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+                            <div class="flex flex-col gap-3 md:items-end">
+                                <p class="text-lg font-semibold whitespace-nowrap text-white">Rp {{ number_format($order->total_harga, 0, ',', '.') }}</p>
 
-    <script>
-        function openModal(orderId, currentStatus) {
-            document.getElementById('statusModal').classList.remove('hidden');
-            const form = document.getElementById('updateStatusForm');
-            form.action = `/admin/orders/${orderId}/status`;
-            document.getElementById('statusSelectModal').value = currentStatus;
-        }
+                                <form method="POST" action="{{ route('admin.orders.updateStatus', $order->id_order) }}"
+                                      x-data="{ status: @js($order->status_pesanan), initial: @js($order->status_pesanan) }"
+                                      :data-confirm="status === 'dibatalkan' ? 'Pesanan {{ $code }} akan ditandai dibatalkan.' : null"
+                                      data-confirm-title="Batalkan pesanan?" data-confirm-button="Ya, batalkan"
+                                      class="flex gap-2">
+                                    @csrf
+                                    @method('PUT')
+                                    <label for="status-{{ $order->id_order }}" class="sr-only">Status {{ $code }}</label>
+                                    <select id="status-{{ $order->id_order }}" name="status_pesanan" x-model="status" class="input w-auto py-2 text-sm">
+                                        @foreach ($statusLabels as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm" :disabled="status === initial">Simpan</button>
+                                </form>
+                            </div>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
 
-        function closeModal() {
-            document.getElementById('statusModal').classList.add('hidden');
-        }
-    </script>
-</body>
-</html>
+            <div class="mt-8">{{ $orders->links() }}</div>
+        @endif
+    </main>
+@endsection

@@ -17,6 +17,7 @@ class ProductController extends Controller
         $variants = \Illuminate\Support\Facades\DB::table('product_variants')
             ->join('sizes', 'product_variants.id_size', '=', 'sizes.id_size')
             ->where('id_product', $product->id_product)
+            ->where('product_variants.is_active', true)
             ->get();
 
         $totalStock = $variants->sum('stok');

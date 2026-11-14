@@ -26,15 +26,12 @@ Route::get('/admin/login', [AuthenticationController::class, 'showAdminLogin'])-
 Route::post('/admin/login', [AuthenticationController::class, 'processAdminLogin']);
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-    
     Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
     
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add/{productId}', [CartController::class, 'addToCart'])->name('cart.add');
     Route::post('/cart/buy-now/{productId}', [CartController::class, 'buyNow'])->name('cart.buyNow');
+    Route::patch('/cart/update/{cartItemId}', [CartController::class, 'updateQty'])->name('cart.update');
     Route::delete('/cart/remove/{cartItemId}', [CartController::class, 'remove'])->name('cart.remove');
     
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
