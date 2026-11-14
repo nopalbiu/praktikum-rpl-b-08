@@ -17,7 +17,7 @@ class ExpireUnpaidOrders extends Command
         $batasWaktu = now()->subHours(24);
 
         $expiredOrders = Order::with(['items.variant', 'payment'])
-            ->where('status_pesanan', 'menunggu_pembayaran')
+            ->where('status_pesanan', Order::STATUS_MENUNGGU_PEMBAYARAN)
             ->where('tanggal_order', '<=', $batasWaktu)
             ->get();
 
@@ -39,7 +39,7 @@ class ExpireUnpaidOrders extends Command
 
                 // 2. Update status order
                 $order->update([
-                    'status_pesanan' => 'dibatalkan',
+                    'status_pesanan' => Order::STATUS_DIBATALKAN,
                 ]);
 
                 // 3. Update status payment

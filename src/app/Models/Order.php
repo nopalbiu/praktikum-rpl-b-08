@@ -12,6 +12,21 @@ class Order extends Model
 {
     use HasFactory;
 
+    public const STATUS_MENUNGGU_PEMBAYARAN = 'menunggu_pembayaran';
+    public const STATUS_SUDAH_DIBAYAR       = 'sudah_dibayar';
+    public const STATUS_DALAM_PERJALANAN    = 'dalam_perjalanan';
+    public const STATUS_SELESAI             = 'selesai';
+    public const STATUS_DIBATALKAN          = 'dibatalkan';
+
+    /** Daftar status yang valid beserta label tampilannya. */
+    public const STATUS_LABELS = [
+        self::STATUS_MENUNGGU_PEMBAYARAN => 'Menunggu Pembayaran',
+        self::STATUS_SUDAH_DIBAYAR       => 'Sudah Dibayar',
+        self::STATUS_DALAM_PERJALANAN    => 'Dalam Perjalanan',
+        self::STATUS_SELESAI             => 'Selesai',
+        self::STATUS_DIBATALKAN          => 'Dibatalkan',
+    ];
+
     protected $primaryKey = 'id_order';
 
     protected $fillable = [
@@ -41,6 +56,11 @@ class Order extends Model
     public function payment(): HasOne
     {
         return $this->hasOne(Payment::class, 'id_order', 'id_order');
+    }
+
+    public function statusLabel(): string
+    {
+        return self::STATUS_LABELS[$this->status_pesanan] ?? ucwords(str_replace('_', ' ', $this->status_pesanan));
     }
 
     public function isPaid(): bool

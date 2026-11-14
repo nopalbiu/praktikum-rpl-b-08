@@ -36,9 +36,22 @@ class Product extends Model
         );
     }
 
+    /** Varian yang masih aktif (bisa dibeli / ditampilkan). */
     public function variants(): HasMany
     {
+        return $this->hasMany(ProductVariant::class, 'id_product', 'id_product')
+                    ->where('is_active', true);
+    }
+
+    /** Semua varian, termasuk yang dinonaktifkan karena sudah ada di riwayat pesanan. */
+    public function allVariants(): HasMany
+    {
         return $this->hasMany(ProductVariant::class, 'id_product', 'id_product');
+    }
+
+    public function hasOrderHistory(): bool
+    {
+        return OrderItem::whereIn('id_variant', $this->allVariants()->select('id_variant'))->exists();
     }
 
     public function images(): HasMany

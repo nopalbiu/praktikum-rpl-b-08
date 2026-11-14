@@ -51,7 +51,7 @@ class CartApiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'id_variant' => 'required|exists:product_variants,id_variant',
+            'id_variant' => ['required', \Illuminate\Validation\Rule::exists('product_variants', 'id_variant')->where('is_active', true)],
             'quantity' => 'required|integer|min:1',
         ]);
 

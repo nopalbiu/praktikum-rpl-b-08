@@ -16,10 +16,12 @@ class ProductVariant extends Model
         'id_product',
         'id_size',
         'stok',
+        'is_active',
     ];
  
     protected $casts = [
-        'stok' => 'integer',
+        'stok'      => 'integer',
+        'is_active' => 'boolean',
     ];
 
     public function product(): BelongsTo
@@ -30,6 +32,11 @@ class ProductVariant extends Model
     public function size(): BelongsTo
     {
         return $this->belongsTo(Size::class, 'id_size', 'id_size');
+    }
+
+    public function cartItems(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CartItem::class, 'id_variant', 'id_variant');
     }
 
     public function isInStock(): bool
